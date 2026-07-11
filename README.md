@@ -4,10 +4,14 @@
 
 This repository is a personal learning workspace for following along with the book [Cloud Native Spring in Action - With Spring Boot and Kubernetes](https://www.manning.com/books/cloud-native-spring-in-action) written by [Thomas Vitale](https://www.thomasvitale.com/) and published by Manning Publications.
 
+<br clear="left"/>
+
 > [!NOTE]
 > The official source code for the book is available at [ThomasVitale/cloud-native-spring-in-action](https://github.com/ThomasVitale/cloud-native-spring-in-action).
 > 
-> This project is **not a direct fork** of the original repository. Instead, it was created from scratch to learn and practice the concepts hands-on. There might be some deviations from the book, such as using newer technologies like **Spring Boot 4**, exploring alternative approaches, or personal experimentation.
+> This project is **not a direct fork** of the original repository.\
+> Instead, it was created from scratch to learn and practice the concepts hands-on.\
+> There might be some deviations from the book, such as using newer technologies like **Spring Boot 4**, exploring alternative approaches, or personal experimentation.
 
 ## Prerequisites
 
