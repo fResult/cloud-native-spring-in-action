@@ -16,7 +16,8 @@ This repository is a personal learning workspace for following along with the bo
 
 ## Prerequisites
 
-Chapter after chapter, you'll build, containerize, and deploy cloud native applications. Along the journey, you will need the following software installed.
+Chapter after chapter, you'll build, containerize, and deploy cloud native applications.\
+Along the journey, you will need the following software installed.
 
 * Java 17+
     * OpenJDK: [Eclipse Temurin](https://adoptium.net)
@@ -34,7 +35,8 @@ Chapter after chapter, you'll build, containerize, and deploy cloud native appli
 
 ## Gradle and Maven
 
-The code samples in the book use Gradle as the build tool. Should you prefer Maven, here's a table mapping Gradle commands to Maven so that you can easily follow along.
+The code samples in the book use Gradle as the build tool.\
+Should you prefer Maven, here's a table mapping Gradle commands to Maven so that you can easily follow along.
 
 Gradle | Maven
 ------ | ------
