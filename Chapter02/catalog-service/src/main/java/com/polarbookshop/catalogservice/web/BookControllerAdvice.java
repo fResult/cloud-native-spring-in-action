@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNullElse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.polarbookshop.catalogservice.domain.BookAlreadyExistsException;
 import com.polarbookshop.catalogservice.domain.BookNotFoundException;
+import io.vavr.collection.List;
 import io.vavr.collection.TreeMap;
 import java.time.Clock;
 import java.time.ZoneId;
@@ -54,9 +55,10 @@ public class BookControllerAdvice {
   public ProblemDetail handleValidationException(MethodArgumentNotValidException ex) {
     val detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
     val target = ex.getBindingResult().getTarget();
+    val fieldErrors = ex.getBindingResult().getFieldErrors();
 
-    val validationErrors = io.vavr.collection.List.ofAll(ex.getBindingResult().getFieldErrors())
-        .foldLeft(TreeMap.<String, Object>empty(), accumulateValidationErrorWith(target));
+    val validationErrors =
+        List.ofAll(fieldErrors).foldLeft(TreeMap.empty(), accumulateValidationErrorWith(target));
 
     log.info("Invalid request body: {}", validationErrors);
 
@@ -68,6 +70,7 @@ public class BookControllerAdvice {
 
   private BiFunction<TreeMap<String, Object>, FieldError, TreeMap<String, Object>>
       accumulateValidationErrorWith(@Nullable Object target) {
+
     return (map, error) -> {
       val fieldName = resolveJsonFieldName(target, error.getField());
       return map.put(fieldName, createErrorDetail(error.getDefaultMessage()));
