@@ -3,6 +3,9 @@
 This chapter focuses on building a REST API and containerizing the application (creating a Docker Image).\
 We use **Spring Boot** with **Cloud Native Buildpacks**, which allows us to build an image without writing a `Dockerfile`.
 
+> [!NOTE]
+> The official source code for this chapter is available at [ThomasVitale/cloud-native-spring-in-action/Chapter02/02-end/catalog-service](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter02/02-end/catalog-service).
+
 ## Testing the REST API
 
 After starting the application (e.g., using `./gradlew bootRun`), you can use HTTPie to test the REST API.
