@@ -1,7 +1,42 @@
 # Chapter 02
 
-This chapter focuses on containerizing the application (creating a Docker Image).\
+This chapter focuses on building a REST API and containerizing the application (creating a Docker Image).\
 We use **Spring Boot** with **Cloud Native Buildpacks**, which allows us to build an image without writing a `Dockerfile`.
+
+## Testing the REST API
+
+After starting the application (e.g., using `./gradlew bootRun`), you can use HTTPie to test the REST API.
+
+First, add a new book to the catalog using the `POST /books` endpoint:
+
+```console
+→ http POST :8080/books author="Lyra Silverstar" \
+  title="Northern Lights" isbn="1234567891" price=9.90
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "author": "Lyra Silverstar",
+  "isbn": "1234567891",
+  "price": 9.9,
+  "title": "Northern Lights"
+}
+```
+
+Then, verify the book was created by querying it with the `GET /books/{isbn}` endpoint:
+
+```console
+→ http :8080/books/1234567891
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "author": "Lyra Silverstar",
+  "isbn": "1234567891",
+  "price": 9.9,
+  "title": "Northern Lights"
+}
+```
 
 ## Containerizing the Application Locally
 

@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     compileOnly("org.projectlombok:lombok")
     implementation("io.vavr:vavr:1.0.1")
     implementation("io.vavr:vavr-jackson:1.0.0")
@@ -28,6 +29,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
