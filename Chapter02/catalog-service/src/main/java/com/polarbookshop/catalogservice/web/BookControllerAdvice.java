@@ -1,5 +1,6 @@
 package com.polarbookshop.catalogservice.web;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,13 +16,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @Log4j2
 @RestControllerAdvice
@@ -66,6 +70,34 @@ public class BookControllerAdvice {
     detail.setProperty("timestamp", getBkkTimestamp());
 
     return detail;
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException.class)
+  public ProblemDetail handleValidationException(HandlerMethodValidationException ex) {
+    val detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+    val validationErrors = List.ofAll(ex.getParameterValidationResults())
+        .foldLeft(TreeMap.empty(), this::accumulateValidationResult);
+
+    detail.setProperty("arguments", validationErrors);
+    detail.setProperty("timestamp", getBkkTimestamp());
+
+    return detail;
+  }
+
+  private TreeMap<String, Object> accumulateValidationResult(
+      TreeMap<String, Object> map, ParameterValidationResult result) {
+
+    val paramName = requireNonNull(result.getMethodParameter().getParameterName());
+
+    return List.ofAll(result.getResolvableErrors())
+        .foldLeft(map, accumulateResolvableErrorWith(paramName));
+  }
+
+  private BiFunction<TreeMap<String, Object>, MessageSourceResolvable, TreeMap<String, Object>>
+      accumulateResolvableErrorWith(String paramName) {
+
+    return (map, error) -> map.put(paramName, createErrorDetail(error.getDefaultMessage()));
   }
 
   private BiFunction<TreeMap<String, Object>, FieldError, TreeMap<String, Object>>
