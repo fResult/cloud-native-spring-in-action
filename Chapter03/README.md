@@ -1,7 +1,12 @@
-# Chapter 03
+# Chapter 3 - Getting Started with Cloud Native Development
 
-This chapter focuses on building a REST API and containerizing the application (creating a Docker Image).\
-We use **Spring Boot** with **Cloud Native Buildpacks**, which allows us to build an image without writing a `Dockerfile`.
+This chapter focuses on building and testing a RESTful application with **Spring Boot and Spring MVC**, while exploring the fundamentals of cloud native application development.
+
+We start by bootstrapping a Spring Boot project and understanding how embedded servers and the thread-per-request model work.\
+We then build a REST API, add data validation and error handling, and consider how to evolve APIs for future requirements.
+
+The chapter also covers testing at different levels using **JUnit and Spring Boot testing support**, including unit tests, integration tests, controller tests, and JSON serialization tests.\
+Finally, we implement the **commit stage of a deployment pipeline** with GitHub Actions to automatically build and test the application.
 
 ## Prerequisites
 

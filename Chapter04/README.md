@@ -1,7 +1,12 @@
-# Chapter 03
+# Chapter 4 - Externalized Configuration Management
 
-This chapter focuses on building a REST API and containerizing the application (creating a Docker Image).\
-We use **Spring Boot** with **Cloud Native Buildpacks**, which allows us to build an image without writing a `Dockerfile`.
+This chapter focuses on managing application configuration externally using **Spring Boot and Spring Cloud Config**.
+
+We start by exploring configuration properties and profiles in Spring Boot, then learn how to externalize configuration using command-line arguments, JVM system properties, and environment variables.\
+This allows the same application artifact to be deployed across different environments with different configurations.
+
+Next, we build a centralized configuration management solution using **Spring Cloud Config Server**, with Git as the configuration data store.\
+We then configure the application as a Spring Cloud Config Client, make both the server and client resilient, and explore how to refresh configuration at runtime without rebuilding the application.
 
 ## Prerequisites
 
