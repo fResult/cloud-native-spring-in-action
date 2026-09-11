@@ -1,3 +1,12 @@
 spring:
   application:
     name: catalog-service (Ch. 03)
+
+server:
+  port: 9001
+  tomcat:
+    connection-timeout: 2s
+    keep-alive-timeout: 15s
+    threads:
+      max: 50
+      min-spare: 5

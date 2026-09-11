@@ -47,7 +47,7 @@ After starting the application (e.g., using `./gradlew bootRun`), you can use HT
 First, from a terminal, add a new book to the catalog using the `POST /books` endpoint:
 
 ```console
-→ http POST :8080/books author="Lyra Silverstar" \
+→ http POST :9001/books author="Lyra Silverstar" \
   title="Northern Lights" isbn="1234567891" price=9.90
 HTTP/1.1 201
 Content-Type: application/json
@@ -63,7 +63,7 @@ Content-Type: application/json
 Then, verify the book was created by querying it with the `GET /books/{isbn}` endpoint:
 
 ```console
-→ http :8080/books/1234567891
+→ http :9001/books/1234567891
 HTTP/1.1 200
 Content-Type: application/json
 
@@ -105,10 +105,10 @@ catalog-service   0.0.1-SNAPSHOT   sha256:60b...   60b819e356b0   46 years ago  
 ```
 
 Now, run the application as a Docker container.\
-The `--rm` flag automatically removes the container when it stops, and `-p 8080:8080` maps the host port to the container port.
+The `--rm` flag automatically removes the container when it stops, and `-p 9001:9001` maps the host port to the container port.
 
 ```console
-→ docker run --rm --name catalog-service -p 8080:8080 catalog-service:0.0.1-SNAPSHOT 
+→ docker run --rm --name catalog-service -p 9001:9001 catalog-service:0.0.1-SNAPSHOT 
 Calculating JVM memory based on 11102852K available memory
 ...
   .   ____          _            __ _ _
@@ -127,7 +127,7 @@ Calculating JVM memory based on 11102852K available memory
 Finally, open a new terminal window and send an HTTP request to verify that the application is running successfully.
 
 ```console
-→ curl localhost:8080
+→ curl localhost:9001
 Welcome to the book catalog!
 ```
 
@@ -173,7 +173,7 @@ By default, applications running in Kubernetes are not accessible.\
 Let's expose our Catalog Service inside the cluster using a Kubernetes Service resource by running the following command:
 
 ```console
-→ kubectl expose deployment catalog-service --name=catalog-service --port=8080
+→ kubectl expose deployment catalog-service --name=catalog-service --port=9001
 service/catalog-service exposed
 ```
 
@@ -182,18 +182,18 @@ Verify that the Service was created successfully.
 ```console
 → kubectl get service catalog-service
 NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-catalog-service   ClusterIP   10.105.103.203   <none>        8080/TCP   100s
+catalog-service   ClusterIP   10.105.103.203   <none>        9001/TCP   100s
 ```
 
 ### Port Forwarding and Testing
 
-Run the following command to forward traffic from a local port on your machine (e.g., 8000) to the port exposed by the Service inside the cluster (8080).\
+Run the following command to forward traffic from a local port on your machine (e.g., 8000) to the port exposed by the Service inside the cluster (9001).\
 Keep this command running (don't cancel it with <kbd>CTRL</kbd>+<kbd>C</kbd>) as long as you need port forwarding to access the application.
 
 ```console
-→ kubectl port-forward service/catalog-service 8000:8080
-Forwarding from 127.0.0.1:8000 -> 8080
-Forwarding from [::1]:8000 -> 8080
+→ kubectl port-forward service/catalog-service 8000:9001
+Forwarding from 127.0.0.1:8000 -> 9001
+Forwarding from [::1]:8000 -> 9001
 ```
 
 Open a new terminal window and send a request to the forwarded port to test the application.
@@ -203,7 +203,7 @@ Open a new terminal window and send a request to the forwarded port to test the 
 Welcome to the book catalog!
 ```
 
-You should see the port forwarding session log like this (appended after `Forwarding from [::1]:8000 -> 8080`):
+You should see the port forwarding session log like this (appended after `Forwarding from [::1]:8000 -> 9001`):
 
 ```console
 Handling connection for 8000
