@@ -1,3 +1,6 @@
 spring:
   application:
     name: catalog-service (Ch. 04)
+
+polar:
+  greeting: Welcome to the local book catalog!
