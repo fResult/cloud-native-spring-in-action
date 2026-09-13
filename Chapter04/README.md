@@ -1,14 +1,26 @@
 # Chapter 4 - Externalized Configuration Management
 
-This chapter focuses on managing application configuration externally using **Spring Boot and Spring Cloud Config**.
+This chapter focuses on managing application configuration externally in cloud native Spring applications.
 
-We start by exploring configuration properties and profiles in Spring Boot, then learn how to externalize configuration using command-line arguments, JVM system properties, and environment variables.\
-This allows the same application artifact to be deployed across different environments with different configurations.
+You start by:
+- Understanding **properties** and **profiles** in Spring (4.1)
+- Learning how to externalize configuration using **command-line arguments**, **JVM system properties**, and **environment variables** (4.2)
 
-Next, we build a centralized configuration management solution using **Spring Cloud Config Server**, with Git as the configuration data store.\
-We then configure the application as a Spring Cloud Config Client, make both the server and client resilient, and explore how to refresh configuration at runtime without rebuilding the application.
+Then you:
+- Build a **centralized configuration management** solution using **Spring Cloud Config Server** with Git as the configuration data store (4.3)
+- Configure applications as **Spring Cloud Config Clients**, make them resilient, and **refresh configuration at runtime** (4.4)
 
-## Prerequisites
+> [!NOTE]
+> The notes in this repository currently cover section **4.2 – Externalized configuration: One build, multiple configurations**.  \
+> Sections **4.1, 4.3, and 4.4** are not yet documented here.
+
+For reference, the official source code for this chapter is available at:
+
+> [ThomasVitale/cloud-native-spring-in-action/Chapter04/04-end](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter04/04-end)
+
+## 1. Prerequisites
+
+To follow the hands-on exercises for this chapter:
 
 - **Java 25+**
 - [Docker](https://docs.docker.com/engine/install)
@@ -16,11 +28,38 @@ We then configure the application as a Spring Cloud Config Client, make both the
 - [**Grype**](https://oss.anchore.com/docs/installation/grype) – a powerful vulnerability scanner
 - [HTTPie](https://httpie.io/cli)
 
-## Development Scripts
+## 2. Project Structure
 
-### Running Grype
+This chapter’s code in this repo is organized as:
 
-After building the project (`./gradlew build`), from the project root directory, scan for vulnerabilities:
+- `Chapter04/` – high-level notes and utilities for Chapter 4
+  - `catalog-service/` – Catalog Service application used to demonstrate **externalized configuration** (section 4.2)
+    - `README.md` – step-by-step guide for:
+      - Command-line arguments
+      - JVM system properties
+      - Environment variables
+    - `src/main/...` – Spring Boot application code
+    - `application.yml` – default configuration properties
+
+## 3. Development Scripts
+
+### 3.1 Building the Project
+
+From the `catalog-service` module, build the project:
+
+```console
+→ ./gradlew build
+```
+
+This generates the executable JAR artifact, e.g.:
+
+```console
+build/libs/catalog-service-0.0.1-SNAPSHOT.jar
+```
+
+### 3.2 Running Grype (Vulnerability Scan)
+
+After building the project, from the project root directory, scan for vulnerabilities:
 
 ```console
 → grype .
@@ -35,16 +74,17 @@ After building the project (`./gradlew build`), from the project root directory,
 No vulnerabilities found
 ```
 
-The output will list any discovered vulnerabilities.
+The output will list any discovered vulnerabilities (if any).
 
-> [!NOTE]
-> The official source code for this chapter is available at [ThomasVitale/cloud-native-spring-in-action/Chapter04/04-end/catalog-service](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter04/04-end/catalog-service).
+### 3.3 Testing the REST API (Catalog Service)
 
-### Testing the REST API
+Start the Catalog Service (for example):
 
-After starting the application (e.g., using `./gradlew bootRun`), you can use HTTPie to test the REST API.
+```console
+→ ./gradlew bootRun
+```
 
-Then, verify the book was created by querying it with the `GET /books` endpoint:
+Then test the `/books` endpoint:
 
 ```console
 → http :9001/books
@@ -65,139 +105,54 @@ Content-Type: application/json
     "title": "Polar Journey"
   }
 ]
-
 ```
 
-## Containerizing the Application Locally
+For more detailed API and configuration examples, see:
 
-### Building the Docker Image
+> [`catalog-service/README.md`](catalog-service/README.md)
 
-First, create a Docker image from the source code using the following command:
+## 4. Chapter Overview (Mapping to TOC)
 
-```console
-→ pwd
-/path/to/cloud-native-spring-in-action/Chapter04
-→ cd catalog-service && ./gradlew bootBuildImage
-> Task :bootBuildImage
+This section maps the book's Table of Contents for Chapter 4 to the hands-on notes in this repo.
 
-...
+### 4.1 Configuration in Spring: Properties and Profiles
 
-Successfully built image 'docker.io/library/catalog-service:0.0.1-SNAPSHOT'
+Concepts (not yet fully documented here):
 
-BUILD SUCCESSFUL
-```
+- **Properties** – key/value pairs for configuration (e.g. `application.yml`, `application.properties`)
+- **Profiles** – feature flags / configuration groups (e.g. `spring.profiles.active=dev`)
 
-### Running and Testing the Container
+Typical topics:
 
-After the build finishes, you can verify that the Docker image was created successfully by listing your Docker images.
+- How Spring loads properties into the `Environment`
+- How to define different profiles (`dev`, `test`, `prod`)
+- How to activate profiles via CLI, environment variables, or config server
 
-```console
-→ docker images --digest catalog-service:0.0.1-SNAPSHOT
-REPOSITORY        TAG              DIGEST          IMAGE ID       CREATED        SIZE
-catalog-service   0.0.1-SNAPSHOT   sha256:60b...   60b819e356b0   46 years ago   684MB
-```
+> TODO: Add hands-on examples for properties and profiles (section 4.1).
 
-Now, run the application as a Docker container.\
-The `--rm` flag automatically removes the container when it stops, and `-p 9001:9001` maps the host port to the container port.
+### 4.2 Externalized Configuration: One Build, Multiple Configurations
 
-```console
-→ docker run --rm --name catalog-service -p 9001:9001 catalog-service:0.0.1-SNAPSHOT 
-Calculating JVM memory based on 11102852K available memory
-...
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
+Goal: Use **one immutable build** (one JAR) and change configuration depending on the environment.
 
- :: Spring Boot ::                (v4.1.0)
+Covered in this repo via `catalog-service/README.md`:
 
-...
-2026-07-11T18:02:14.017Z  INFO 1 --- [catalog-service] [           main] c.p.c.CatalogServiceApplication          : Started CatalogServiceApplication in 0.841 seconds (process running for 1.028)
-```
+- Configuring an application through **command-line arguments**
+- Configuring an application through **JVM system properties**
+- Configuring an application through **environment variables**
 
-Finally, open a new terminal window and send an HTTP request to verify that the application is running successfully.
+> For step-by-step commands and terminal examples, see:  
+> [`catalog-service/README.md`](catalog-service/README.md)
 
-```console
-→ curl localhost:9001
-Welcome to the book catalog!
-```
 
-## Deploying to a Local Kubernetes Cluster
 
-### Loading the Image into Minikube
 
-Next, let's deploy the application to a local Kubernetes cluster using Minikube.\
-Make sure you have Minikube and `kubectl` installed and that your Minikube cluster is running.
 
-```console
-→ minikube image load catalog-service:0.0.1-SNAPSHOT
-```
 
-### Creating a Deployment
 
-Create a Kubernetes deployment using the loaded image.
 
-```console
-→ kubectl create deployment catalog-service --image=catalog-service:0.0.1-SNAPSHOT
-deployment.apps/catalog-service created
-```
 
-Finally, verify that the deployment was created successfully and is running.
 
-```console
-→ kubectl get deployment
-NAME              READY   UP-TO-DATE   AVAILABLE   AGE
-catalog-service   1/1     1            1           60s
-```
 
-You can also check the status of the Pod created by the deployment.
 
-```console
-→ kubectl get pod
-NAME                               READY   STATUS    RESTARTS   AGE
-catalog-service-86c5b54c8b-s4fws   1/1     Running   0          2m22s
-```
 
-### Exposing the Application
 
-By default, applications running in Kubernetes are not accessible.\
-Let's expose our Catalog Service inside the cluster using a Kubernetes Service resource by running the following command:
-
-```console
-→ kubectl expose deployment catalog-service --name=catalog-service --port=9001
-service/catalog-service exposed
-```
-
-Verify that the Service was created successfully.
-
-```console
-→ kubectl get service catalog-service
-NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-catalog-service   ClusterIP   10.105.103.203   <none>        9001/TCP   100s
-```
-
-### Port Forwarding and Testing
-
-Run the following command to forward traffic from a local port on your machine (e.g., 8000) to the port exposed by the Service inside the cluster (9001).\
-Keep this command running (don't cancel it with <kbd>CTRL</kbd>+<kbd>C</kbd>) as long as you need port forwarding to access the application.
-
-```console
-→ kubectl port-forward service/catalog-service 8000:9001
-Forwarding from 127.0.0.1:8000 -> 9001
-Forwarding from [::1]:8000 -> 9001
-```
-
-Open a new terminal window and send a request to the forwarded port to test the application.
-
-```console
-→ curl localhost:8000
-Welcome to the book catalog!
-```
-
-You should see the port forwarding session log like this (appended after `Forwarding from [::1]:8000 -> 9001`):
-
-```console
-Handling connection for 8000
-```
