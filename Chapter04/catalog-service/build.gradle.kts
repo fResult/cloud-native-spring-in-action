@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
     java
     id("org.springframework.boot") version "4.1.1"
@@ -59,6 +61,10 @@ spotless {
         ktlint()
         target("*.gradle.kts")
     }
+}
+
+tasks.withType<BootRun> {
+    systemProperty("spring.profiles.active", "testdata")
 }
 
 tasks.withType<Test> {
