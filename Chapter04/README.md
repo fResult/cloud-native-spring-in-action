@@ -44,35 +44,28 @@ The output will list any discovered vulnerabilities.
 
 After starting the application (e.g., using `./gradlew bootRun`), you can use HTTPie to test the REST API.
 
-First, from a terminal, add a new book to the catalog using the `POST /books` endpoint:
+Then, verify the book was created by querying it with the `GET /books` endpoint:
 
 ```console
-→ http POST :9001/books author="Lyra Silverstar" \
-  title="Northern Lights" isbn="1234567891" price=9.90
-HTTP/1.1 201
-Content-Type: application/json
-
-{
-  "author": "Lyra Silverstar",
-  "isbn": "1234567891",
-  "price": 9.90,
-  "title": "Northern Lights"
-}
-```
-
-Then, verify the book was created by querying it with the `GET /books/{isbn}` endpoint:
-
-```console
-→ http :9001/books/1234567891
+→ http :9001/books
 HTTP/1.1 200
 Content-Type: application/json
 
-{
-  "author": "Lyra Silverstar",
-  "isbn": "1234567891",
-  "price": 9.90,
-  "title": "Northern Lights"
-}
+[
+  {
+    "author": "Lyra Silverstar",
+    "isbn": "1234567891",
+    "price": 9.9,
+    "title": "Northern Lights"
+  },
+  {
+    "author": "Iorek Polason",
+    "isbn": "1234567892",
+    "price": 12.9,
+    "title": "Polar Journey"
+  }
+]
+
 ```
 
 ## Containerizing the Application Locally
