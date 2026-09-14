@@ -1,0 +1,18 @@
+server:
+  port: 8888
+  tomcat:
+    connection-timeout: 2s
+    keep-alive-timeout: 15s
+    threads:
+      max: 50
+      min-spare: 5
+
+spring:
+  application:
+    name: config-service (Ch. 04)
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/fResult/cloud-native-spring-config-repo
+          default-label: main
