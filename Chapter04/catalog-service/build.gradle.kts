@@ -9,6 +9,7 @@ plugins {
 
 group = "com.polarbookshop"
 version = "0.0.1-SNAPSHOT"
+description = "Provides functionality for managing the books in the catalog."
 
 java {
     toolchain {
