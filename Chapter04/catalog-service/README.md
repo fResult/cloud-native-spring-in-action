@@ -211,5 +211,5 @@ Using a single immutable JAR (`catalog-service-0.0.1-SNAPSHOT.jar`), you can ext
 
 All of these let you change configuration **without rebuilding** the application, aligning with cloud-native and 15-Factor principles.
 
-> For a high-level overview of Chapter 4 and links to other sections (4.1, 4.3, 4.4), see:  
+> For a high-level overview of Chapter 4 and links to other sections, see:  
 > [`../README.md`](../README.md)

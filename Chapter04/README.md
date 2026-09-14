@@ -11,8 +11,10 @@ Then you:
 - Configure applications as **Spring Cloud Config Clients**, make them resilient, and **refresh configuration at runtime** (4.4)
 
 > [!NOTE]
-> The notes in this repository currently cover section **4.2 – Externalized configuration: One build, multiple configurations**.  \
-> Sections **4.1, 4.3, and 4.4** are not yet documented here.
+> The notes in this repository currently cover:
+> - **4.2 – Externalized configuration: One build, multiple configurations**
+> - **4.3 – Centralized configuration management with Spring Cloud Config Server** (selected parts)
+> Section **4.4** are not yet documented here.
 
 For reference, the official source code for this chapter is available at:
 
@@ -41,77 +43,21 @@ This chapter’s code in this repo is organized as:
     - `src/main/...` – Spring Boot application code
     - `application.yml` – default configuration properties
 
-## 3. Development Scripts
+## 3. Hands-on Modules in This Chapter
 
-### 3.1 Building the Project
+This chapter includes the following hands-on modules:
 
-From the `catalog-service` module, build the project:
+- `catalog-service/` – demonstrates **externalized configuration** using:
+  - Command-line arguments
+  - JVM system properties
+  - Environment variables
+  - See: [`catalog-service/README.md`](catalog-service/README.md)
+- `config-repo/` – local mirror of the **Git-backed configuration repository** used by Spring Cloud Config Server.
+  - See: [`config-repo/README.md`](config-repo/README.md)
+- `config-service/` – **Spring Cloud Config Server** providing centralized configuration via REST.
+  - See: [`config-service/README.md`](config-service/README.md)
 
-```console
-→ ./gradlew build
-```
-
-This generates the executable JAR artifact, e.g.:
-
-```console
-build/libs/catalog-service-0.0.1-SNAPSHOT.jar
-```
-
-### 3.2 Running Grype (Vulnerability Scan)
-
-After building the project, from the project root directory, scan for vulnerabilities:
-
-```console
-→ grype .
- ✔ Vulnerability DB                [updated]  
- ✔ Indexed file system                                                                                                    .
- ✔ Cataloged contents
-   ├── ✔ Packages                        [0 packages]  
-   └── ✔ Executables                     [0 executables]  
- ✔ Scanned for vulnerabilities     [0 vulnerability matches]  
-   ├── by severity: 0 critical, 0 high, 0 medium, 0 low, 0 negligible
-   └── by status:   0 fixed, 0 not-fixed, 0 ignored
-No vulnerabilities found
-```
-
-The output will list any discovered vulnerabilities (if any).
-
-### 3.3 Testing the REST API (Catalog Service)
-
-Start the Catalog Service (for example):
-
-```console
-→ ./gradlew bootRun
-```
-
-Then test the `/books` endpoint:
-
-```console
-→ http :9001/books
-HTTP/1.1 200
-Content-Type: application/json
-
-[
-  {
-    "author": "Lyra Silverstar",
-    "isbn": "1234567891",
-    "price": 9.9,
-    "title": "Northern Lights"
-  },
-  {
-    "author": "Iorek Polason",
-    "isbn": "1234567892",
-    "price": 12.9,
-    "title": "Polar Journey"
-  }
-]
-```
-
-For more detailed API and configuration examples, see:
-
-> [`catalog-service/README.md`](catalog-service/README.md)
-
-## 4. Chapter Overview (Mapping to TOC)
+## 4. Chapter Overview (Mapping to Table of Content)
 
 This section maps the book's Table of Contents for Chapter 4 to the hands-on notes in this repo.
 
@@ -128,45 +74,43 @@ Typical topics:
 - How to define different profiles (`dev`, `test`, `prod`)
 - How to activate profiles via CLI, environment variables, or config server
 
-> TODO: Add hands-on examples for properties and profiles (section 4.1).
-
 ### 4.2 Externalized Configuration: One Build, Multiple Configurations
 
-Goal: Use **one immutable build** (one JAR) and change configuration depending on the environment.
+Goal: Use **one immutable JAR** and change configuration depending on the environment.
 
-Covered in this repo via `catalog-service/README.md`:
+Hands-on in this repo:
+- `catalog-service/` – shows how to override configuration via:
+  - Command-line arguments
+  - JVM system properties
+  - Environment variables (recommended)
+- Step-by-step examples:
+  - Building the JAR once
+  - Running with different property sources
+  - Understanding property precedence
 
-- Configuring an application through **command-line arguments**
-- Configuring an application through **JVM system properties**
-- Configuring an application through **environment variables**
-
-> For step-by-step commands and terminal examples, see:  
+> For detailed commands and examples, see:  
 > [`catalog-service/README.md`](catalog-service/README.md)
 
 ### 4.3 Centralized Configuration Management with Spring Cloud Config Server
 
-Concepts (not yet implemented in this repo):
+Goal: Store configuration in **Git** and serve it centrally via a **Spring Cloud Config Server**.
 
-- Using **Git** to store configuration data
-- Setting up a **Spring Cloud Config Server**
-- Making the configuration server **resilient**
-- Understanding the configuration server **REST API**
+Concepts:
 
-Current implementation status in this repo:
+- Using **Git** as the single source of truth for configuration data
+- Exposing configuration via a **REST API**
+- Resolving configuration by `{application}`, `{profile}`, `{label}`
 
-- `config-repo/` - local mirror of the Git-backed configuration repository used by the Config Server (see [`config-repo/README.md`](config-repo/README.md))
-- `config-service/` - **not yet created** (planned Spring Cloud Config Server module)
+Implemented in this repo as:
 
-Typical hands-on structure (for future notes):
+- `config-repo/` – local mirror of the Git-backed configuration repository
+  - Mirrors: [`cloud-native-spring-config-repo`](https://github.com/fResult/cloud-native-spring-config-repo)
+  - See: [`config-repo/README.md`](config-repo/README.md)
+- `config-service/` – Spring Cloud Config Server
+  - Reads from the Git repo and exposes configuration via HTTP (e.g. `/catalog-service/default`, `/catalog-service/prod`)
+  - See: [`config-service/README.md`](config-service/README.md)
 
-- `config-server/` module
-  - `application.yml` pointing to a Git repo with config
-  - `README.md` explaining:
-    - How to run the config server
-    - How to query `/actuator/health`, `/application/default` etc.
-    - How to handle failures / resilience
 
-> TODO: Add `config-server` project and README for section 4.3.
 
 
 
