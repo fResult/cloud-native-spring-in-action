@@ -13,6 +13,7 @@ jobs:
         project:
           - Chapter03/catalog-service
           - Chapter04/catalog-service
+          - Chapter04/config-service
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
