@@ -143,13 +143,30 @@ Covered in this repo via `catalog-service/README.md`:
 > For step-by-step commands and terminal examples, see:  
 > [`catalog-service/README.md`](catalog-service/README.md)
 
+### 4.3 Centralized Configuration Management with Spring Cloud Config Server
 
+Concepts (not yet implemented in this repo):
 
+- Using **Git** to store configuration data
+- Setting up a **Spring Cloud Config Server**
+- Making the configuration server **resilient**
+- Understanding the configuration server **REST API**
 
+Current implementation status in this repo:
 
+- `config-repo/` - local mirror of the Git-backed configuration repository used by the Config Server (see [`config-repo/README.md`](config-repo/README.md))
+- `config-service/` - **not yet created** (planned Spring Cloud Config Server module)
 
+Typical hands-on structure (for future notes):
 
+- `config-server/` module
+  - `application.yml` pointing to a Git repo with config
+  - `README.md` explaining:
+    - How to run the config server
+    - How to query `/actuator/health`, `/application/default` etc.
+    - How to handle failures / resilience
 
+> TODO: Add `config-server` project and README for section 4.3.
 
 
 
