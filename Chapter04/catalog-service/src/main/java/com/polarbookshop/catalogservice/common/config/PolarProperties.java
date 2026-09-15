@@ -1,7 +1,11 @@
 package com.polarbookshop.catalogservice.common.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** @param greeting A message to welcome users. */
+@Data
 @ConfigurationProperties(prefix = "polar")
-public record PolarProperties(String greeting) {}
+public class PolarProperties {
+  /** A message to welcome users */
+  public String greeting;
+}
