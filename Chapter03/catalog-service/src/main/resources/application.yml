@@ -1,7 +1,3 @@
-spring:
-  application:
-    name: catalog-service
-
 server:
   port: 9001
   tomcat:
@@ -10,3 +6,7 @@ server:
     threads:
       max: 50
       min-spare: 5
+
+spring:
+  application:
+    name: catalog-service

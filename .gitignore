@@ -93,3 +93,5 @@ out/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+.metals
