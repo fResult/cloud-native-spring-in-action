@@ -24,5 +24,11 @@ spring:
         max-interval: 2000 # 2s
         multiplier: 1.1
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,env
+
 polar:
   greeting: Welcome to the local book catalog!
