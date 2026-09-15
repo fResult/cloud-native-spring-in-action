@@ -1,4 +1,4 @@
-# Chapter 4 - Externalized Configuration Management
+# Chapter 4 – Externalized Configuration Management
 
 This chapter focuses on managing application configuration externally in cloud native Spring applications.
 
@@ -16,7 +16,8 @@ Then you:
 > - **4.3 – Centralized configuration management with Spring Cloud Config Server** (selected parts)
 > - **4.4 – Using a configuration server with Spring Cloud Config Client** (hands-on for Catalog Service)
 >
-> Later sections in 4.4 (e.g. resilience, refresh at runtime) are not yet fully documented here.
+> The coverage for 4.4 is focused on the main hands-on flow (client setup, resilience, and manual refresh).\
+> More advanced production scenarios (e.g. Spring Cloud Bus, webhooks, secrets management) are not documented here.
 
 For reference, the official source code for this chapter is available at:
 
@@ -36,16 +37,16 @@ To follow the hands-on exercises for this chapter:
 
 This chapter’s code in this repo is organized as:
 
-- `Chapter04/` – high-level notes and utilities for Chapter 4
-  - `catalog-service/` – Catalog Service application used to demonstrate:
-    - **Externalized configuration** (Section 4.2)
-    - **Spring Cloud Config Client** (Section 4.4)
-    - `README.md` – step-by-step guide for:
-      - Command-line arguments
-      - JVM system properties
-      - Environment variables
-    - `src/main/...` – Spring Boot application code
-    - `application.yml` – default configuration properties
+- `catalog-service/` – Catalog Service application used to demonstrate:
+  - Externalized configuration (Section 4.2)
+  - Spring Cloud Config Client (Section 4.4.1)
+  - Client resilience and retry (Section 4.4.2)
+  - Runtime configuration refresh (Section 4.4.3)
+  - `README.md` – step-by-step guide for:
+    - Command-line arguments
+    - JVM system properties
+    - Environment variables
+    - Spring Cloud Config Client + resilience + refresh
 
 ## 3. Hands-on Modules in This Chapter
 
@@ -120,3 +121,22 @@ Implemented in this repo as:
   - `config-service` (Config Server)
   - `config-repo` (centralized configuration files)
   - `catalog-service` (Config Client)
+
+Hands-on coverage in this repo:
+
+- **4.4.1 – Setting up a configuration client**
+  - `catalog-service` uses:
+    - `spring-cloud-starter-config`
+    - `spring.application.name=catalog-service`
+    - `spring.config.import=optional:configserver:`
+    - `spring.cloud.config.uri=http://localhost:8888`
+- **4.4.2 – Making the configuration client resilient**
+  - `catalog-service` configures:
+    - timeouts (`request-connect-timeout`, `request-read-timeout`)
+    - optional retry behavior via Spring Retry (`spring.cloud.config.retry.*`, `fail-fast`)
+- **4.4.3 – Refreshing configuration at runtime**
+  - `catalog-service` uses Spring Boot Actuator:
+    - exposes `/actuator/refresh`
+    - reloads `@ConfigurationProperties` beans when a refresh is triggered
+  - `config-repo` stores updated configuration (e.g. new `polar.greeting` values)
+  - `config-service` serves the latest configuration from Git
