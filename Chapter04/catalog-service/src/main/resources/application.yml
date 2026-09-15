@@ -15,6 +15,14 @@ spring:
   cloud:
     config:
       uri: http://localhost:8888
+      request-connect-timeout: 5000
+      request-read-timeout: 5000
+      fail-fast: false # In production, set to true
+      retry:
+        max-attempts: 6
+        initial-interval: 1000 # 1s
+        max-interval: 2000 # 2s
+        multiplier: 1.1
 
 polar:
   greeting: Welcome to the local book catalog!
