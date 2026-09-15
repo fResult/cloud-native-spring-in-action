@@ -11,6 +11,17 @@ configuration data is stored in a **separate Git repository**, and the Config Se
 >
 > - [`cloud-native-spring-config-repo`](https://github.com/fResult/cloud-native-spring-config-repo)
 
+## Structure (Catalog Service configuration)
+
+For `catalog-service`, the main configuration files are:
+
+- `catalog-service.yml` - default configuration (e.g. `polar.greeting: "Welcome to the catalog from the config server!"`)
+- `catalog-service-prod.yml` - production-specific configuration (e.g. `polar.greeting: "Welcome to the production catalog from the config server"`)
+
+These files are selected by the Config Service based on:
+- `spring.application.name=catalog-service`
+- `spring.profiles.active` (e.g. `prod`)
+
 ## Purpose
 
 - Act as the **Git-backed configuration store** for the Config Service (Spring Cloud Config Server)
@@ -25,4 +36,3 @@ This repo is consumed by the **Config Service** project:
 For a high-level overview of Chapter 4 and links to other sections, see:
 
 - [`../README.md`](../README.md)
-

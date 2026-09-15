@@ -1,6 +1,8 @@
-# Catalog Service - Externalized Configuration
+# Catalog Service - Externalized Configuration & Config Client
 
-This guide demonstrates how to **externalize application configuration** and override configuration properties at runtime using the **same immutable executable JAR artifact** (no rebuild required).
+This guide demonstrates:
+- How to **externalize application configuration** using command-line arguments, JVM system properties, and environment variables (Section 4.2).
+- How to **use Spring Cloud Config Client** to fetch centralized configuration from a Config Service (Section 4.4).
 
 The examples are based on section **4.2 – Externalized configuration: One build, multiple configurations** of *Cloud Native Spring in Action*.
 
@@ -22,7 +24,10 @@ build/libs/catalog-service-0.0.1-SNAPSHOT.jar
 
 The key idea: **you will keep using this same JAR** and only change configuration from the outside.
 
-## 2. Running with Default Configuration (`application.yml`)
+## 2. Externalized configuration with local property sources (Section 4.2)
+
+
+### 2.1 Running with Default Configuration (`application.yml`)
 
 Run the application as a standard Java application using the default configuration defined in `application.yml`:
 
@@ -41,7 +46,7 @@ At this point, you haven’t overridden any properties yet, so the root endpoint
 
 > Remember to terminate the Java process with <kbd>CTRL</kbd>+<kbd>C</kbd> before running each new example.
 
-## 3. Configuring via Command-Line Arguments (4.2.1)
+### 2.2 Configuring via Command-Line Arguments (4.2.1)
 
 By default, Spring Boot converts any **command-line argument** into a property key/value pair and includes it in the `Environment` object.\
 In a production application, CLI arguments are one of the property sources with **highest precedence**.
@@ -63,7 +68,7 @@ Welcome to the catalog from CLI
 ```
 The application uses the message defined in the command-line argument, since it takes precedence over property files.
 
-## 4. Configuring via JVM System Properties (4.2.2)
+### 2.3 Configuring via JVM System Properties (4.2.2)
 
 JVM system properties can override Spring properties much like command-line arguments, but they have **lower priority** than CLI arguments.
 
@@ -85,7 +90,7 @@ Welcome to the catalog from JVM
 
 The application uses the message defined as a JVM system property, since it takes precedence over property files (`application.yml`).
 
-## 5. Property Precedence: CLI vs JVM vs `application.yml`
+### 2.4 Property Precedence: CLI vs JVM vs `application.yml`
 
 What happens if you specify both a JVM system property and a CLI argument?
 
@@ -112,7 +117,7 @@ Summary of precedence (for this example):
 2. JVM system properties (`-Dpolar.greeting=...`)
 3. Property files (`application.yml`)
 
-## 6. Configuring via Environment Variables (4.2.3)
+### 2.5 Configuring via Environment Variables (4.2.3)
 
 Environment variables are the recommended option according to the **15-Factor methodology**.\
 They are:
@@ -130,7 +135,7 @@ Example mapping:
 - Environment variable: `POLAR_GREETING`
 - Spring property: `polar.greeting`
 
-### 6.1 Overriding `polar.greeting` via Environment Variable (Linux/macOS)
+#### 2.5.1 Overriding `polar.greeting` via Environment Variable (Linux/macOS)
 
 Terminate any running process (<kbd>CTRL</kbd>+<kbd>C</kbd>), then run:
 
@@ -152,7 +157,7 @@ Welcome to the catalog from ENV
 
 After testing, stop the process with <kbd>CTRL</kbd>+<kbd>C</kbd>.
 
-### 6.2 Overriding via Environment Variable (Windows PowerShell)
+#### 2.5.2 Overriding via Environment Variable (Windows PowerShell)
 
 On Windows PowerShell, you can achieve the same result with:
 
@@ -174,7 +179,7 @@ After testing, unset the environment variable:
 PS> Remove-Item Env:\POLAR_GREETING
 ```
 
-## 7. Why Environment Variables Are Preferred
+#### 2.5.3 Why Environment Variables Are Preferred
 
 When you use environment variables for storing configuration data:
 
@@ -198,7 +203,7 @@ Environment variables work seamlessly on:
 
 > In later sections (4.3 and beyond), you'll see how to complement environment variables with centralized configuration services like **Spring Cloud Config**, and how to handle secrets and advanced configuration scenarios.
 
-## 8. Recap
+### 2.6 Recap (Section 4.2)
 
 Using a single immutable JAR (`catalog-service-0.0.1-SNAPSHOT.jar`), you can externalize configuration by:
 
@@ -208,6 +213,82 @@ Using a single immutable JAR (`catalog-service-0.0.1-SNAPSHOT.jar`), you can ext
    `-Dpolar.greeting="Welcome to the catalog from JVM"`
 3. **Environment variables** (recommended)\
    `POLAR_GREETING="Welcome to the catalog from ENV"`
+
+## 3. Using Spring Cloud Config Client (Section 4.4.1)
+
+This section shows how to configure Catalog Service as a Spring Cloud Config Client that retrieves its configuration from [Config Service](../config-service/README.md) and [`config-repo`](../config-repo/README.md).
+
+### 3.1 Enabling Spring Cloud Config Client
+
+The `build.gradle.kts` file includes:
+
+- `implementation("org.springframework.cloud:spring-cloud-starter-config")`
+- The Spring Cloud BOM: `org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}`
+
+This allows Catalog Service to act as a configuration client for Config Service.
+
+### 3.2 Pointing Catalog Service to Config Service
+
+The `application.yml` file configures Catalog Service as follows:
+
+```yaml
+spring:
+  application:
+    name: catalog-service
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+```
+
+- `spring.application.name` – used by Config Service to select the right configuration file (e.g. `catalog-service.yml`).
+- `spring.config.import=optional:configserver:` – imports configuration from the config server when available, but does not fail the application if the server is down (useful for local development).
+- `spring.cloud.config.uri` – URL of the Config Service instance.
+
+### 3.3 Running Catalog Service with Config Service
+
+1. Start Config Service (see `../config-service/README.md`):
+   ```console
+   → ./gradlew bootRun
+   ```
+2. Ensure `config-repo` is available and contains:
+   - `catalog-service.yml`
+   - `catalog-service-prod.yml`
+3. Build and run Catalog Service:
+   ```console
+   → ./gradlew bootJar
+   → java -jar build/libs/catalog-service-0.0.1-SNAPSHOT.jar
+   ```
+4. Call the root endpoint:
+   ```console
+   → http :9001/
+   Welcome to the catalog from the config server!
+   ```
+
+The greeting message comes from `catalog-service.yml` in `config-repo`, not from the local `application.yml`.
+
+```console
+→ java -jar build/libs/catalog-service-0.0.1-SNAPSHOT.jar \
+  --spring.profiles.active=prod
+
+→ http :9001/
+Welcome to the production catalog from the config server
+```
+
+In this case, the greeting message is loaded from `catalog-service-prod.yml` in `config-repo`.
+
+### 3.4 Recap (Section 4.4.1)
+
+With Spring Cloud Config Client:
+
+- Catalog Service uses the same immutable JAR.
+- Configuration is centralized in `config-repo`.
+- Config Service serves the right configuration based on:
+   - `spring.application.name` (`catalog-service`)
+   - `spring.profiles.active` (e.g. `prod`)
+
+---
 
 All of these let you change configuration **without rebuilding** the application, aligning with cloud-native and 15-Factor principles.
 

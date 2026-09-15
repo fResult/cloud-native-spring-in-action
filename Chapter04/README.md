@@ -14,7 +14,9 @@ Then you:
 > The notes in this repository currently cover:
 > - **4.2 – Externalized configuration: One build, multiple configurations**
 > - **4.3 – Centralized configuration management with Spring Cloud Config Server** (selected parts)
-> Section **4.4** are not yet documented here.
+> - **4.4 – Using a configuration server with Spring Cloud Config Client** (hands-on for Catalog Service)
+>
+> Later sections in 4.4 (e.g. resilience, refresh at runtime) are not yet fully documented here.
 
 For reference, the official source code for this chapter is available at:
 
@@ -35,7 +37,9 @@ To follow the hands-on exercises for this chapter:
 This chapter’s code in this repo is organized as:
 
 - `Chapter04/` – high-level notes and utilities for Chapter 4
-  - `catalog-service/` – Catalog Service application used to demonstrate **externalized configuration** (section 4.2)
+  - `catalog-service/` – Catalog Service application used to demonstrate:
+    - **Externalized configuration** (Section 4.2)
+    - **Spring Cloud Config Client** (Section 4.4)
     - `README.md` – step-by-step guide for:
       - Command-line arguments
       - JVM system properties
@@ -110,10 +114,9 @@ Implemented in this repo as:
   - Reads from the Git repo and exposes configuration via HTTP (e.g. `/catalog-service/default`, `/catalog-service/prod`)
   - See: [`config-service/README.md`](config-service/README.md)
 
+### 4.4 Using a Configuration Server with Spring Cloud Config Client
 
-
-
-
-
-
-
+- Demonstrated in:
+  - `config-service` (Config Server)
+  - `config-repo` (centralized configuration files)
+  - `catalog-service` (Config Client)

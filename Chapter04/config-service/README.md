@@ -107,6 +107,19 @@ You can query it directly with HTTPie to see what configuration will be served t
   Will be configured to use Spring Cloud Config Client and read `polar.greeting` (and other properties) from this Config Service.\  
   See: [`../catalog-service/README.md`](../catalog-service/README.md)
 
+## 5. Using Config Service with Catalog Service (Section 4.4.1)
+
+In Section 4.4.1, `catalog-service` is configured as a Spring Cloud Config Client that talks to this Config Service instance:
+
+1. Start Config Service:
+   ```console
+   → ./gradlew bootRun
+   ```
+2. Ensure `config-repo` is available (see `../config-repo/README.md`).
+3. Follow the steps in `../catalog-service/README.md` to run Catalog Service and verify that:
+   - `http :9001/` returns the greeting from `catalog-service.yml`
+   - `http :9001/` with `--spring.profiles.active=prod` returns the greeting from `catalog-service-prod.yml`
+
 ---
 
 > For a high-level overview of Chapter 4 and links to other sections, see:  
