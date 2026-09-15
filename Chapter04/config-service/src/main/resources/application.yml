@@ -9,7 +9,7 @@ server:
 
 spring:
   application:
-    name: config-service (Ch. 04)
+    name: config-service
   cloud:
     config:
       server:
