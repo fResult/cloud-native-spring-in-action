@@ -104,7 +104,7 @@ You can query it directly with HTTPie to see what configuration will be served t
   - Remote: [`cloud-native-spring-config-repo`](https://github.com/fResult/cloud-native-spring-config-repo)
   - Local mirror: [`../config-repo`](../config-repo)
 - **Catalog Service (Config Client)**  
-  Will be configured to use Spring Cloud Config Client and read `polar.greeting` (and other properties) from this Config Service.\  
+  Is configured to use Spring Cloud Config Client and read `polar.greeting` (and other properties) from this Config Service.\
   See: [`../catalog-service/README.md`](../catalog-service/README.md)
 
 ## 5. Using Config Service with Catalog Service (Section 4.4.1)
@@ -119,6 +119,19 @@ In Section 4.4.1, `catalog-service` is configured as a Spring Cloud Config Clien
 3. Follow the steps in `../catalog-service/README.md` to run Catalog Service and verify that:
    - `http :9001/` returns the greeting from `catalog-service.yml`
    - `http :9001/` with `--spring.profiles.active=prod` returns the greeting from `catalog-service-prod.yml`
+
+## 6. Verifying updated configuration (Section 4.4.3)
+
+When you change configuration in `config-repo` (e.g., update `polar.greeting` in `catalog-service.yml` and push the change), Config Service will serve the new value immediately.
+
+You can verify this by calling:
+
+```console
+→ http :8888/catalog-service/default
+```
+
+The response should include the updated `polar.greeting` value.\
+Catalog Service will start using this new value after you trigger a refresh (see [`catalog-service/README.md`](../catalog-service/README.md) for details).
 
 ---
 

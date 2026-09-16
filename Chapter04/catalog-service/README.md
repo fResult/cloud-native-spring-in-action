@@ -1,4 +1,4 @@
-# Catalog Service - Externalized Configuration & Config Client
+# Catalog Service – Externalized Configuration & Config Client
 
 This guide demonstrates:
 - How to **externalize application configuration** using command-line arguments, JVM system properties, and environment variables (Section 4.2).
@@ -288,9 +288,79 @@ With Spring Cloud Config Client:
    - `spring.application.name` (`catalog-service`)
    - `spring.profiles.active` (e.g. `prod`)
 
----
+## 4. Making the Config Client resilient (Section 4.4.2)
 
-All of these let you change configuration **without rebuilding** the application, aligning with cloud-native and 15-Factor principles.
+These timeouts make the interaction with Config Service more resilient:
+- `request-connect-timeout` – maximum time to wait for a TCP connection to the config server.
+- `request-read-timeout` – maximum time to wait while reading configuration data from the server.
+
+### 4.1 Timeouts for connecting to Config Service
+
+These timeouts make the interaction with Config Service more resilient:
+- `request-connect-timeout` – maximum time to wait for a TCP connection to the config server.
+- `request-read-timeout` – maximum time to wait while reading configuration data from the server.
+
+### 4.2 Retrying connection to Config Service (Spring Retry)
+
+To make Catalog Service more resilient when Config Service is temporarily unavailable, the project uses Spring Retry:
+
+- `spring-retry` dependency is added to `build.gradle.kts`.
+- `spring.cloud.config.fail-fast=true` enables retry behavior for the config client.
+- `spring.cloud.config.retry.*` controls:
+  - `max-attempts` – maximum number of connection attempts.
+  - `initial-interval` – initial delay before retrying (ms).
+  - `max-interval` – maximum delay between retries (ms).
+  - `multiplier` – factor used to compute the next delay (exponential backoff).
+
+In local development, you may want to keep `fail-fast=false` to avoid hard failures when the config server is down.\
+In production, you can enable `fail-fast` via externalized configuration.
+
+## 5. Refreshing Configuration at Runtime (Section 4.4.3)
+
+### 5.1 Enabling Actuator + Refresh Endpoint
+
+Spring Boot Actuator exposes a `/actuator/refresh` endpoint that triggers a configuration refresh event.\
+We explicitly expose this endpoint via `management.endpoints.web.exposure.include=refresh`.
+
+### 5.2 Behavior of `@ConfigurationProperties` + `RefreshScopeRefreshedEvent`
+
+The PolarProperties bean (defined with @ConfigurationProperties) automatically listens for RefreshScopeRefreshedEvent.\
+When a refresh is triggered, it is reloaded with the latest configuration from Config Service, so you don't need to change the code.
+
+### 5.3 Step-By-Step flow: Change Config at Runtime
+
+1. Make sure both Config Service and Catalog Service are running:
+   ```console
+   → ./gradlew bootRun   # in config-service
+   → ./gradlew bootRun   # in catalog-service
+   ```
+2. Open the `config-repo` and change the `polar.greeting` value in `catalog-service.yml`:
+   ```yaml
+   polar:
+     greeting: "Welcome to the catalog from a fresh config server"
+   ```
+3. Commit and push the changes to the remote config repo.
+4. Verify that Config Service returns the new value:
+   ```console
+   → http :8888/catalog-service/default
+   ```
+5. Trigger a refresh in Catalog Service:
+   ```console
+   → http POST :9001/actuator/refresh
+   ```
+6. Call the root endpoint again:
+   ```console
+   → http :9001/
+   Welcome to the catalog from a fresh config server
+   ```
+7. Stop both applications with <kbd>CTRL</kbd>+<kbd>C</kbd> when you're done.
+
+### 5.4 Recap (Section 4.4.3)
+
+You've updated the configuration of a running application without restarting it or rebuilding the JAR, while keeping changes traceable in Git.\
+This aligns with the 15-Factor methodology and cloud-native practices.
+
+---
 
 > For a high-level overview of Chapter 4 and links to other sections, see:  
 > [`../README.md`](../README.md)
