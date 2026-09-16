@@ -1,0 +1,84 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
+plugins {
+    java
+    id("org.springframework.boot") version "4.1.1"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("com.diffplug.spotless") version "8.10.1"
+}
+
+group = "com.polarbookshop"
+version = "0.0.1-SNAPSHOT"
+description = "Provides functionality for managing the books in the catalog."
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(26)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom(annotationProcessor.get())
+    }
+}
+
+extra["springCloudVersion"] = "2025.1.3"
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
+    compileOnly("org.projectlombok:lombok")
+    implementation("io.vavr:vavr:1.0.1")
+    implementation("io.vavr:vavr-jackson:1.0.0")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+    testCompileOnly("org.projectlombok:lombok")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testAnnotationProcessor("org.projectlombok:lombok")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+            .style("GOOGLE")
+            .formatJavadoc(true)
+
+        importOrder()
+        removeUnusedImports()
+
+        target("**/*.java")
+        targetExclude("**/build/**")
+    }
+
+    kotlinGradle {
+        ktlint()
+        target("*.gradle.kts")
+    }
+}
+
+tasks.withType<BootRun> {
+    systemProperty("spring.profiles.active", "testdata")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
