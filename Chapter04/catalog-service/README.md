@@ -317,50 +317,128 @@ In production, you can enable `fail-fast` via externalized configuration.
 
 ## 5. Refreshing Configuration at Runtime (Section 4.4.3)
 
+This section demonstrates how to update `polar.greeting` through Spring Cloud Config without restarting Catalog Service or rebuilding its JAR.
+
 ### 5.1 Enabling Actuator + Refresh Endpoint
 
-Spring Boot Actuator exposes a `/actuator/refresh` endpoint that triggers a configuration refresh event.\
-We explicitly expose this endpoint via `management.endpoints.web.exposure.include=refresh`.
+Catalog Service includes Spring Boot Actuator, and Spring Cloud provides the `/actuator/refresh` endpoint.
 
-### 5.2 Behavior of `@ConfigurationProperties` + `RefreshScopeRefreshedEvent`
+Expose it in `application.yml`:
 
-The PolarProperties bean (defined with @ConfigurationProperties) automatically listens for RefreshScopeRefreshedEvent.\
-When a refresh is triggered, it is reloaded with the latest configuration from Config Service, so you don't need to change the code.
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
+```
 
-### 5.3 Step-By-Step flow: Change Config at Runtime
+Trigger a refresh with:
 
-1. Make sure both Config Service and Catalog Service are running:
+```console
+→ http POST :9001/actuator/refresh
+```
+
+Spring Cloud reloads configuration into the application's `Environment` and publishes an `EnvironmentChangeEvent`.\
+Its configuration properties infrastructure then rebinds `@ConfigurationProperties` beans to the updated values.
+
+### 5.2 Why `PolarProperties` Uses a Mutable Class Instead of a Record
+
+This project prefers immutable records.\
+`PolarProperties` is a deliberate exception because its configuration must support runtime updates.
+
+Spring Boot supports records for loading `@ConfigurationProperties` through constructor binding at startup.\
+However, constructor-bound configuration objects, including records, cannot be refreshed through Spring Cloud's configuration properties rebinding mechanism.
+
+For this example, `PolarProperties` therefore uses a mutable class:
+
+```java
+@Data
+@ConfigurationProperties(prefix = "polar")
+public class PolarProperties {
+  /** A message to welcome users */
+  public String greeting;
+}
+```
+
+Lombok's `@Data` generates `getGreeting()` and `setGreeting(String)`.\
+Spring Boot binds `polar.greeting` using JavaBean property binding, and Spring Cloud uses the same binding approach to update the bean after a refresh.
+
+This lets `HomeController` read the updated greeting from its existing `PolarProperties` dependency on subsequent requests.
+
+### 5.3 Why We Keep Standard JavaBean Getters and Setters
+
+JavaBean property binding relies on standard accessor names:
+
+- `getGreeting()` reads the `greeting` property.
+- `setGreeting(String)` allows the binder to update it.
+
+Avoid Lombok's `@Accessors(fluent = true)` on `PolarProperties`.\
+It replaces these methods with `greeting()` and `greeting(String)`, which do not follow the accessor naming conventions this binding approach expects.
+
+As a result, `greeting` can remain `null` even when `polar.greeting` is defined in `application.yml` or the Config Repository.
+
+`HomeController` uses the generated JavaBean getter:
+
+```java
+@GetMapping
+public String greeting() {
+  return polarProperties.getGreeting();
+}
+```
+
+The binding requirement concerns the accessors exposed by `PolarProperties`.\
+Calling a method named `greeting()` does not itself cause a value to become `null`; replacing the standard accessors with fluent methods prevents the configuration from being bound correctly.
+
+### 5.4 Step-by-Step: Change Configuration at Runtime
+
+1. Start Config Service and Catalog Service in separate terminals:
    ```console
-   → ./gradlew bootRun   # in config-service
-   → ./gradlew bootRun   # in catalog-service
+   → ./gradlew bootRun   # in Chapter04/config-service
+   → ./gradlew bootRun   # in Chapter04/catalog-service
    ```
-2. Open the `config-repo` and change the `polar.greeting` value in `catalog-service.yml`:
+2. Check the current greeting:
+   ```console
+   → http :9001/
+   Welcome to the catalog from the config server
+   ```
+3. In the [Git repository][config-repo] used by Config Service, update `polar.greeting` in `catalog-service.yml`:
    ```yaml
    polar:
      greeting: "Welcome to the catalog from a fresh config server"
    ```
-3. Commit and push the changes to the remote config repo.
-4. Verify that Config Service returns the new value:
+4. Commit and push the change to the remote Config Repository.
+5. Verify that Config Service returns the updated configuration:
    ```console
    → http :8888/catalog-service/default
    ```
-5. Trigger a refresh in Catalog Service:
+   Check that `polar.greeting` contains the new value.
+6. Trigger a refresh in Catalog Service:
    ```console
    → http POST :9001/actuator/refresh
    ```
-6. Call the root endpoint again:
+   The response lists changed property keys. If `polar.greeting` changed in the effective configuration, it appears in that list.
+7. Call the root endpoint again:
    ```console
    → http :9001/
    Welcome to the catalog from a fresh config server
    ```
-7. Stop both applications with <kbd>CTRL</kbd>+<kbd>C</kbd> when you're done.
+8. Stop both applications with <kbd>CTRL</kbd>+<kbd>C</kbd> when finished.
 
-### 5.4 Recap (Section 4.4.3)
+### 5.5 Recap (Section 4.4.3)
 
-You've updated the configuration of a running application without restarting it or rebuilding the JAR, while keeping changes traceable in Git.\
-This aligns with the 15-Factor methodology and cloud-native practices.
+Catalog Service can apply configuration changes without restarting the application or rebuilding its JAR.
+
+`PolarProperties` intentionally uses a mutable class with standard JavaBean getters and setters to support runtime rebinding.\
+We retain our preference for immutable records elsewhere; configuration that must be rebound at runtime is the exception demonstrated here.
+
+References:
+- [Spring Boot: Externalized Configuration](https://docs.spring.io/spring-boot/reference/features/external-config.html)
+- [Spring Cloud: Environment Changes](https://docs.spring.io/spring-cloud-commons/reference/spring-cloud-commons/application-context-services.html#environment-changes)
 
 ---
 
 > For a high-level overview of Chapter 4 and links to other sections, see:  
 > [`../README.md`](../README.md)
+
+[config-repo]: https://github.com/fResult/cloud-native-spring-config-repo
