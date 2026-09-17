@@ -35,9 +35,11 @@ public class BookService {
         .findByIsbn(isbn)
         .map(existingBook -> {
           val bookToUpdate = existingBook
+              .withId(existingBook.id())
               .withTitle(book.title())
               .withAuthor(book.author())
-              .withPrice(book.price());
+              .withPrice(book.price())
+              .withVersion(existingBook.version());
 
           return bookRepository.save(bookToUpdate);
         })
