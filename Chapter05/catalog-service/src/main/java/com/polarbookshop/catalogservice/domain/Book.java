@@ -6,9 +6,14 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import lombok.With;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 
 @With
 public record Book(
+    @Nullable @Id Long id,
+
     @NotBlank(message = "The book ISBN must be defined.")
     @Pattern(regexp = "^([0-9]{10}|[0-9]{13})", message = "The ISBN format must be valid.")
     String isbn,
@@ -18,4 +23,11 @@ public record Book(
 
     @NotNull(message = "The book price must be defined.")
     @Positive(message = "The book price must be greater than zero.")
-    BigDecimal price) {}
+    BigDecimal price,
+
+    @Version int version) {
+
+  public static Book of(String isbn, String title, String author, BigDecimal price) {
+    return new Book(null, isbn, title, author, price, 0);
+  }
+}
