@@ -23,7 +23,7 @@ class BookValidationTests {
   @Test
   void whenAllFieldsCorrectThenValidationSucceeds() {
     // Given
-    val book = new Book("1234567890", "Title", "Author", BigDecimal.TEN);
+    val book = Book.of("1234567890", "Title", "Author", BigDecimal.TEN);
 
     // When
     val violations = HashSet.ofAll(validator.validate(book));
@@ -37,7 +37,7 @@ class BookValidationTests {
     // Given
     val expectedViolationSize = 1;
     val expectedErrorMessage = "The ISBN format must be valid.";
-    val book = new Book("a234567890", "Title", "Author", BigDecimal.TEN);
+    val book = Book.of("a234567890", "Title", "Author", BigDecimal.TEN);
 
     // When
     val violations = HashSet.ofAll(validator.validate(book));

@@ -1,6 +1,7 @@
 package com.polarbookshop.catalogservice.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.polarbookshop.catalogservice.domain.Book;
 import java.math.BigDecimal;
@@ -18,25 +19,33 @@ class BookJsonTest {
 
   @Test
   void testSerialize() throws Exception {
-    val book = new Book("1234567890", "Title", "Author", BigDecimal.TEN);
+    val book = new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, 21);
     val jsonContent = json.write(book);
+
+    assertNotNull(book.id(), "Book ID must not be null");
+    assertThat(jsonContent)
+        .extractingJsonPathNumberValue("@.id")
+        .isEqualTo(book.id().intValue());
     assertThat(jsonContent).extractingJsonPathStringValue("@.isbn").isEqualTo(book.isbn());
     assertThat(jsonContent).extractingJsonPathStringValue("@.title").isEqualTo(book.title());
     assertThat(jsonContent).extractingJsonPathStringValue("@.author").isEqualTo(book.author());
     assertThat(jsonContent).extractingJsonPathNumberValue("@.price").satisfies(price -> {
       Assertions.assertEquals(price.doubleValue(), book.price().doubleValue());
     });
+    assertThat(jsonContent).extractingJsonPathNumberValue("@.version").isEqualTo(book.version());
   }
 
   @Test
   void testDeserialize() throws Exception {
-    val book = new Book("1234567890", "Title", "Author", BigDecimal.TEN);
+    val book = new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, 21);
     val jsonString = """
         {
+          "id": 42,
           "isbn": "1234567890",
           "title": "Title",
           "author": "Author",
-          "price": 10
+          "price": 10,
+          "version": 21
         }
         """;
 

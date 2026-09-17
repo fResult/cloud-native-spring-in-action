@@ -26,7 +26,7 @@ class CatalogServiceApplicationTests {
   @Test
   void whenPostRequestThenBookCreated() {
     // Given
-    val expectedBook = new Book("1231231231", "Title", "Author", BigDecimal.TEN);
+    val expectedBook = Book.of("1231231231", "Title", "Author", BigDecimal.TEN);
 
     // When
     val response = webTestClient.post().uri("/books").bodyValue(expectedBook).exchange();
