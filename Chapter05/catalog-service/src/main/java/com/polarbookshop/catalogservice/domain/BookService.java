@@ -39,6 +39,8 @@ public class BookService {
               .withTitle(book.title())
               .withAuthor(book.author())
               .withPrice(book.price())
+              .withCreatedDate(existingBook.createdDate())
+              .withLastModifiedDate(existingBook.lastModifiedDate())
               .withVersion(existingBook.version());
 
           return bookRepository.save(bookToUpdate);
