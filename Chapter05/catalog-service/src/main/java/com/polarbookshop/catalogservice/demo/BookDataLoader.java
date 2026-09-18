@@ -22,6 +22,7 @@ public class BookDataLoader {
     val book1 =
         Book.of("1234567891", "Northern Lights", "Lyra Silverstar", BigDecimal.valueOf(9.90));
     val book2 = Book.of("1234567892", "Polar Journey", "Iorek Polason", BigDecimal.valueOf(12.90));
-    List.of(book1, book2).forEach(bookRepository::save);
+
+    bookRepository.saveAll(List.of(book1, book2));
   }
 }
