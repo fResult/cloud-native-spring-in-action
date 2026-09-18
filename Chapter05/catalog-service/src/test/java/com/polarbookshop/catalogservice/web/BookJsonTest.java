@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.polarbookshop.catalogservice.domain.Book;
 import java.math.BigDecimal;
 import java.time.Instant;
-
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
