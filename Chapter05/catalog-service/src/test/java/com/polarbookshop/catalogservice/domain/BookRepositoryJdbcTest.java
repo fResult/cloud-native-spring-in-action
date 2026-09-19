@@ -98,8 +98,10 @@ class BookRepositoryJdbcTest {
   @Test
   void findBookByIdWhenNotExisting() {
     // When
-    val existing = bookRepository.existsById(42L);
-    assertFalse(existing);
+    val existing = bookRepository.findBookById(42L);
+
+    // Then
+    assertTrue(existing.isEmpty());
   }
 
   @Test
