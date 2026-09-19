@@ -78,6 +78,28 @@ class BookRepositoryJdbcTest {
     // Then
     assertFalse(existing);
   }
+
+  @Test
+  void findBookByIdWhenExisting() {
+    // Given
+    val bookId = 42L;
+    val bookToCreate =
+        new Book(bookId, "1234567890", "Title", "Author", BigDecimal.valueOf(12.90), null, null, 0);
+    jdbcAggregateTemplate.insert(bookToCreate);
+
+    // When
+    val existing = bookRepository.findBookById(bookId);
+
+    // Then
+    assertTrue(existing.isDefined());
+    assertEquals(bookId, existing.get().id());
+  }
+
+  @Test
+  void findBookByIdWhenNotExisting() {
+    // When
+    val existing = bookRepository.existsById(42L);
+    assertFalse(existing);
   }
 
   @Test
