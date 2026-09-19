@@ -78,4 +78,20 @@ class BookRepositoryJdbcTest {
     // Then
     assertFalse(existing);
   }
+  }
+
+  @Test
+  void deleteByIsbn() {
+    // Given
+    val bookIsbn = "1234561241";
+    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(12.90));
+    val persistedBook = jdbcAggregateTemplate.insert(bookToCreate);
+
+    // When
+    bookRepository.deleteByIsbn(bookIsbn);
+
+    // Then
+    val maybeBook = bookRepository.findByIsbn(bookIsbn);
+    assertTrue(maybeBook.isEmpty());
+  }
 }
