@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,6 +36,14 @@ class CatalogServiceApplicationTests {
         MockMvcWebTestClient.bindToApplicationContext(webApplicationContext).build();
   }
 
+  private ResponseSpec postBookCreationFor(Book book) {
+    return webTestClient.post().uri("/books").bodyValue(book).exchange();
+  }
+
+  private ResponseSpec getBookRetrievingFor(String isbn) {
+    return webTestClient.get().uri("/books/{isbn}", isbn).exchange();
+  }
+
   @Test
   void whenGetRequestWithIdThenBookReturned() {
     // Given
@@ -42,9 +51,8 @@ class CatalogServiceApplicationTests {
     val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
 
     // When
-    val createdBookResponse =
-        webTestClient.post().uri("/books").bodyValue(bookToCreate).exchange();
-    val bookResponse = webTestClient.get().uri("/books/{isbn}", bookIsbn).exchange();
+    val createdBookResponse = postBookCreationFor(bookToCreate);
+    val bookResponse = getBookRetrievingFor(bookIsbn);
 
     // Then
     val expectedCreatedBook = createdBookResponse
@@ -68,7 +76,7 @@ class CatalogServiceApplicationTests {
     val expectedBook = Book.of("1231231231", "Title", "Author", BigDecimal.TEN);
 
     // When
-    val response = webTestClient.post().uri("/books").bodyValue(expectedBook).exchange();
+    val response = postBookCreationFor(expectedBook);
 
     // Then
     response.expectStatus().isCreated().expectBody(Book.class).value(actualBook -> {
