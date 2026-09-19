@@ -2,6 +2,7 @@ package com.polarbookshop.catalogservice.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.polarbookshop.catalogservice.common.config.DataConfiguration;
@@ -67,5 +68,14 @@ class BookRepositoryJdbcTest {
     // Then
     assertTrue(actualBook.isDefined());
     assertEquals(book.isbn(), actualBook.get().isbn());
+  }
+
+  @Test
+  void findBookByIsbnWhenNotExisting() {
+    // When
+    val existing = bookRepository.existsByIsbn("1234561240");
+
+    // Then
+    assertFalse(existing);
   }
 }
