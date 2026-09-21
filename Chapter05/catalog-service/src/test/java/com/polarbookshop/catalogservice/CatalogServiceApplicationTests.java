@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.ProblemDetail;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
@@ -112,6 +113,26 @@ class CatalogServiceApplicationTests {
     response.expectStatus().isOk().expectBody(Book.class).value(actualBook -> {
       assertNotNull(actualBook);
       assertEquals(bookToUpdate.price(), actualBook.price());
+    });
+  }
+
+  @Test
+  void WhenDeleteRequestThenBookDeleted() {
+    // Given
+    val bookIsbn = "1231231233";
+    val errorMessage = "The book with ISBN %s was not found.".formatted(bookIsbn);
+    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
+    postBookCreationFor(bookToCreate).expectStatus().isCreated();
+
+    // When
+    val response = webTestClient.delete().uri("/books/{isbn}", bookIsbn).exchange();
+
+    // Then
+    response.expectStatus().isNoContent();
+
+    getBookRetrievingFor(bookIsbn).expectStatus().isNotFound().expectBody(ProblemDetail.class).value(problemDetail -> {
+      assertNotNull(problemDetail);
+      assertEquals(problemDetail.getDetail(), errorMessage);
     });
   }
 }
