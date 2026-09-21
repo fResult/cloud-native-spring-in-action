@@ -14,6 +14,8 @@ jobs:
           - Chapter03/catalog-service
           - Chapter04/catalog-service
           - Chapter04/config-service
+          - Chapter05/catalog-service
+          - Chapter05/config-service
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
