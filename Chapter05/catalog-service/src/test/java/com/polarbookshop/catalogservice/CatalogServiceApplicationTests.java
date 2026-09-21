@@ -130,9 +130,13 @@ class CatalogServiceApplicationTests {
     // Then
     response.expectStatus().isNoContent();
 
-    getBookRetrievingFor(bookIsbn).expectStatus().isNotFound().expectBody(ProblemDetail.class).value(problemDetail -> {
-      assertNotNull(problemDetail);
-      assertEquals(problemDetail.getDetail(), errorMessage);
-    });
+    getBookRetrievingFor(bookIsbn)
+        .expectStatus()
+        .isNotFound()
+        .expectBody(ProblemDetail.class)
+        .value(problemDetail -> {
+          assertNotNull(problemDetail);
+          assertEquals(problemDetail.getDetail(), errorMessage);
+        });
   }
 }
