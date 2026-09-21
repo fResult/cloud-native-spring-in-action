@@ -84,4 +84,34 @@ class CatalogServiceApplicationTests {
       assertEquals(expectedBook.isbn(), actualBook.isbn());
     });
   }
+
+  @Test
+  void whenPutRequestThenBOokUpdated() {
+    // Given
+    val bookIsbn = "1231231232";
+    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
+    val createdBook = postBookCreationFor(bookToCreate)
+        .expectStatus()
+        .isCreated()
+        .expectBody(Book.class)
+        .value(Assertions::assertNotNull)
+        .returnResult()
+        .getResponseBody();
+
+    assertNotNull(createdBook);
+    val bookToUpdate = createdBook.withPrice(BigDecimal.valueOf(7.95));
+
+    // When
+    val response = webTestClient
+        .put()
+        .uri("/books/{isbn}", bookIsbn)
+        .bodyValue(bookToUpdate)
+        .exchange();
+
+    // Then
+    response.expectStatus().isOk().expectBody(Book.class).value(actualBook -> {
+      assertNotNull(actualBook);
+      assertEquals(bookToUpdate.price(), actualBook.price());
+    });
+  }
 }
