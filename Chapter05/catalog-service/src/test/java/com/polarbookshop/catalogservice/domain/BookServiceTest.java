@@ -26,6 +26,7 @@ class BookServiceTest {
   void whenBookToCreateAlreadyExistsThenThrows() {
     // Given
     val bookIsbn = "1234561232";
+    val expectedErrorMessage = "A book with ISBN %s is already exists.".formatted(bookIsbn);
     val bookToCreate =
         Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90), "Polarsophia");
     given(bookRepository.existsByIsbn(bookIsbn)).willReturn(true);
@@ -35,14 +36,14 @@ class BookServiceTest {
 
     // Then
     val exception = assertThrowsExactly(BookAlreadyExistsException.class, executable);
-    assertEquals(
-        exception.getMessage(), "A book with ISBN %s is already exists.".formatted(bookIsbn));
+    assertEquals(expectedErrorMessage, exception.getMessage());
   }
 
   @Test
   void whenBookToReadDoesNotExistsThenThrows() {
     // Given
     val bookIsbn = "1234561232";
+    val expectedErrorMessage = "The book with ISBN %s was not found.".formatted(bookIsbn);
     given(bookRepository.findByIsbn(bookIsbn)).willReturn(Option.none());
 
     // When
@@ -50,7 +51,6 @@ class BookServiceTest {
 
     // Then
     val exception = assertThrowsExactly(BookNotFoundException.class, executable);
-    assertEquals(
-        exception.getMessage(), "The book with ISBN %s was not found.".formatted(bookIsbn));
+    assertEquals(expectedErrorMessage, exception.getMessage());
   }
 }
