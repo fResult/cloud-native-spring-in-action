@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.polarbookshop.catalogservice.common.config.DataConfiguration;
+import com.polarbookshop.catalogservice.config.TestContainersConfiguration;
 import io.vavr.collection.List;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
@@ -14,23 +15,14 @@ import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @DataJdbcTest
 @Testcontainers
-@Import(DataConfiguration.class)
+@Import({DataConfiguration.class, TestContainersConfiguration.class})
 class BookRepositoryJdbcTest {
-  @Container
-  @ServiceConnection
-  static final PostgreSQLContainer postgres =
-      new PostgreSQLContainer(DockerImageName.parse("postgres:18-alpine"));
-
   @Autowired
   private BookRepository bookRepository;
 
