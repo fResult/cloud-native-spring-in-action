@@ -49,7 +49,8 @@ class CatalogServiceApplicationTests {
   void whenGetRequestWithIdThenBookReturned() {
     // Given
     val bookIsbn = "1231231230";
-    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
+    val bookToCreate =
+        Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90), "Polarsophia");
 
     // When
     val createdBookResponse = postBookCreationFor(bookToCreate);
@@ -74,7 +75,7 @@ class CatalogServiceApplicationTests {
   @Test
   void whenPostRequestThenBookCreated() {
     // Given
-    val expectedBook = Book.of("1231231231", "Title", "Author", BigDecimal.TEN);
+    val expectedBook = Book.of("1231231231", "Title", "Author", BigDecimal.TEN, "Polarsophia");
 
     // When
     val response = postBookCreationFor(expectedBook);
@@ -90,7 +91,8 @@ class CatalogServiceApplicationTests {
   void whenPutRequestThenBOokUpdated() {
     // Given
     val bookIsbn = "1231231232";
-    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
+    val bookToCreate =
+        Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90), "Polarsophia");
     val createdBook = postBookCreationFor(bookToCreate)
         .expectStatus()
         .isCreated()
@@ -121,7 +123,8 @@ class CatalogServiceApplicationTests {
     // Given
     val bookIsbn = "1231231233";
     val errorMessage = "The book with ISBN %s was not found.".formatted(bookIsbn);
-    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90));
+    val bookToCreate =
+        Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(9.90), "Polarsophia");
     postBookCreationFor(bookToCreate).expectStatus().isCreated();
 
     // When

@@ -21,10 +21,14 @@ class BookJsonTest {
   @Test
   void testSerialize() throws Exception {
     val now = Instant.now();
-    val book = new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, now, now, 21);
+    val book =
+        new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, "Polarsophia", now, now, 21);
     val jsonContent = json.write(book);
 
     assertNotNull(book.id(), "Book ID must not be null");
+    assertNotNull(book.createdDate(), "Book createdDate must not be null");
+    assertNotNull(book.lastModifiedDate(), "Book lastModifiedDate must not be null");
+
     assertThat(jsonContent)
         .extractingJsonPathNumberValue("@.id")
         .isEqualTo(book.id().intValue());
@@ -34,13 +38,23 @@ class BookJsonTest {
     assertThat(jsonContent).extractingJsonPathNumberValue("@.price").satisfies(price -> {
       Assertions.assertEquals(price.doubleValue(), book.price().doubleValue());
     });
+    assertThat(jsonContent)
+        .extractingJsonPathStringValue("@.publisher")
+        .isEqualTo(book.publisher());
+    assertThat(jsonContent)
+        .extractingJsonPathStringValue("@.createdDate")
+        .isEqualTo(book.createdDate().toString());
+    assertThat(jsonContent)
+        .extractingJsonPathStringValue("@.lastModifiedDate")
+        .isEqualTo(book.lastModifiedDate().toString());
     assertThat(jsonContent).extractingJsonPathNumberValue("@.version").isEqualTo(book.version());
   }
 
   @Test
   void testDeserialize() throws Exception {
     val now = Instant.now();
-    val book = new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, now, now, 21);
+    val book =
+        new Book(42L, "1234567890", "Title", "Author", BigDecimal.TEN, "Polarsophia", now, now, 21);
     val jsonString = """
         {
           "id": 42,
@@ -48,6 +62,7 @@ class BookJsonTest {
           "title": "Title",
           "author": "Author",
           "price": 10,
+          "publisher": "Polarsophia",
           "createdDate": "%s",
           "lastModifiedDate": "%s",
           "version": 21

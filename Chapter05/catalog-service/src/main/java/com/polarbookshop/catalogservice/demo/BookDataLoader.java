@@ -21,9 +21,14 @@ public class BookDataLoader {
   public void loadBooks() {
     bookRepository.deleteAll();
 
-    val book1 =
-        Book.of("1234567891", "Northern Lights", "Lyra Silverstar", BigDecimal.valueOf(9.90));
-    val book2 = Book.of("1234567892", "Polar Journey", "Iorek Polason", BigDecimal.valueOf(12.90));
+    val book1 = Book.of(
+        "1234567891",
+        "Northern Lights",
+        "Lyra Silverstar",
+        BigDecimal.valueOf(9.90),
+        "Polarsophia");
+    val book2 = Book.of(
+        "1234567892", "Polar Journey", "Iorek Polason", BigDecimal.valueOf(12.90), "Polarsophia");
 
     bookRepository.saveAll(List.of(book1, book2));
   }

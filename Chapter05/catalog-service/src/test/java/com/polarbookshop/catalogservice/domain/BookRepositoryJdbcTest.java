@@ -40,8 +40,9 @@ class BookRepositoryJdbcTest {
   @Test
   void findAllBooks() {
     // Given
-    val book1 = Book.of("1234561235", "Title", "Author", BigDecimal.valueOf(12.90));
-    val book2 = Book.of("1234561236", "Another Title", "Author", BigDecimal.valueOf(12.90));
+    val book1 = Book.of("1234561235", "Title", "Author", BigDecimal.valueOf(12.90), "Polarsophia");
+    val book2 =
+        Book.of("1234561236", "Another Title", "Author", BigDecimal.valueOf(12.90), "Polarsophia");
     jdbcAggregateTemplate.insertAll(List.of(book1, book2));
 
     // When
@@ -60,7 +61,7 @@ class BookRepositoryJdbcTest {
   void findBookByIsbnWhenExisting() {
     // Given
     val bookIsbn = "1234561237";
-    val book = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(12.90));
+    val book = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(12.90), "Polarsophia");
     jdbcAggregateTemplate.insert(book);
 
     // When
@@ -84,8 +85,16 @@ class BookRepositoryJdbcTest {
   void findBookByIdWhenExisting() {
     // Given
     val bookId = 42L;
-    val bookToCreate =
-        new Book(bookId, "1234567890", "Title", "Author", BigDecimal.valueOf(12.90), null, null, 0);
+    val bookToCreate = new Book(
+        bookId,
+        "1234567890",
+        "Title",
+        "Author",
+        BigDecimal.valueOf(12.90),
+        "Polarsophia",
+        null,
+        null,
+        0);
     jdbcAggregateTemplate.insert(bookToCreate);
 
     // When
@@ -109,7 +118,8 @@ class BookRepositoryJdbcTest {
   void deleteByIsbn() {
     // Given
     val bookIsbn = "1234561241";
-    val bookToCreate = Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(12.90));
+    val bookToCreate =
+        Book.of(bookIsbn, "Title", "Author", BigDecimal.valueOf(12.90), "Polarsophia");
     val persistedBook = jdbcAggregateTemplate.insert(bookToCreate);
 
     // When
