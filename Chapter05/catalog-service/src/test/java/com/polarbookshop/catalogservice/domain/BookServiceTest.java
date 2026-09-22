@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.BDDMockito.given;
 
+import io.vavr.control.Option;
 import java.math.BigDecimal;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -36,5 +37,20 @@ class BookServiceTest {
     val exception = assertThrowsExactly(BookAlreadyExistsException.class, executable);
     assertEquals(
         exception.getMessage(), "A book with ISBN %s is already exists.".formatted(bookIsbn));
+  }
+
+  @Test
+  void whenBookToReadDoesNotExistsThenThrows() {
+    // Given
+    val bookIsbn = "1234561232";
+    given(bookRepository.findByIsbn(bookIsbn)).willReturn(Option.none());
+
+    // When
+    final Executable executable = () -> bookService.viewBookDetails(bookIsbn);
+
+    // Then
+    val exception = assertThrowsExactly(BookNotFoundException.class, executable);
+    assertEquals(
+        exception.getMessage(), "The book with ISBN %s was not found.".formatted(bookIsbn));
   }
 }
