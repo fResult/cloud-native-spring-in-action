@@ -14,6 +14,19 @@ This repository is a personal learning workspace for following along with the bo
 > Instead, it was created from scratch to learn and practice the concepts hands-on.\
 > There might be some deviations from the book, such as using newer technologies like **Spring Boot 4**, exploring alternative approaches, or personal experimentation.
 
+## API Examples and Persistence Fields
+
+The Chapter 5 Catalog Service uses the `Book` persistence record directly as the request and response body, without separate DTOs or DTO/entity mapping.\
+Its primitive `int version` field must be supplied in POST/PUT requests with the current JSON configuration; omitting it results in HTTP 400 during deserialization.
+
+HTTPie examples therefore include `version:=0` (a JSON number).\
+For POST, zero represents a new entity.\
+For an existing book, the current PUT implementation uses the version loaded from the database instead of the submitted value, so this request field does not provide client-side stale-update detection.\
+See [Chapter 5's request-body notes](Chapter05/README.md#why-post-and-put-include-version) for details.
+
+This applies to the current Chapter 5 implementation.\
+Chapters 3 and 4 do not have a `version` field on `Book`.
+
 ## Prerequisites
 
 Chapter after chapter, you'll build, containerize, and deploy cloud native applications.\

@@ -1,6 +1,6 @@
 # Config Repo
 
-This directory contains the **configuration repository** used by the Spring Cloud Config Server in Chapter 4.
+This directory contains the **configuration repository** used by the Spring Cloud Config Server in Chapter 5.
 
 In the book, this corresponds to section **4.3.1 – Using Git to store your configuration data**:  
 configuration data is stored in a **separate Git repository**, and the Config Server reads from that repo to serve configuration to client applications.

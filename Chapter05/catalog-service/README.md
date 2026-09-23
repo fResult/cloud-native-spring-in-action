@@ -16,6 +16,18 @@ It's part of the project built in the [Cloud Native Spring in Action](https://ww
 |                 |          |           |  201   |    Book    | Create a book with the given ISBN.        |
 | `/books/{isbn}` | `DELETE` |           |  204   |            | Delete the book with the given ISBN.      |
 
+### Request Body: `version`
+
+POST and PUT bind directly to the `Book` persistence record, without separate DTOs or DTO/entity mapping.\
+Its `@Version int version` field must be present and non-null with the current JSON configuration; otherwise, request deserialization returns HTTP 400 (`Cannot map null into type int`).
+
+For the local HTTPie examples, include **`version:=0`** to send a JSON number.\
+Zero marks a new entity for POST and the PUT creation path.\
+When updating an existing book, the service ignores the submitted version and saves using the version read from the database.\
+It therefore does not detect stale client data by comparing request versions, even though JDBC optimistic locking still applies to the database update.
+
+See [Why POST and PUT Include `version`](../README.md#why-post-and-put-include-version) for the Jackson background and complete examples.
+
 ## Useful Commands
 
 | Gradle Command	            | Description                                   |
@@ -52,7 +64,7 @@ docker run -d \
 |:-------------------------------|:-----------------:|
 | `docker stop polar-postgres`   |  Stop container.  |
 | `docker start polar-postgres`  | Start container.  |
-| `docker remove polar-postgres` | Remove container. |
+| `docker rm -fv polar-postgres` | Remove container. |
 
 ### Database Commands
 
