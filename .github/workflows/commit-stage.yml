@@ -16,6 +16,8 @@ jobs:
           - Chapter04/config-service
           - Chapter05/catalog-service
           - Chapter05/config-service
+          - Chapter06/catalog-service
+          - Chapter06/config-service
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
