@@ -8,6 +8,8 @@ RUN java -Djarmode=tools -jar catalog-service.jar extract --layers --destination
 # Runtime Container
 FROM eclipse-temurin:26-jre
 WORKDIR /workspace
+RUN useradd spring
+USER spring
 COPY --from=builder /builder/extracted/dependencies ./
 COPY --from=builder /builder/extracted/spring-boot-loader ./
 COPY --from=builder /builder/extracted/snapshot-dependencies ./
