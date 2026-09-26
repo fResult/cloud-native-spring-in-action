@@ -1,3 +1,4 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
@@ -90,6 +91,11 @@ spotless {
         ktlint()
         target("*.gradle.kts")
     }
+}
+
+tasks.withType<BootBuildImage> {
+    imageName = projectDir.name
+    environment = mapOf("BP_JVM_version" to "${java.toolchain.languageVersion.get()}")
 }
 
 tasks.withType<BootRun> {

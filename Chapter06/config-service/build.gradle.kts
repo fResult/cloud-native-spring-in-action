@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
 plugins {
     java
     id("org.springframework.boot") version "4.1.1"
@@ -58,6 +60,11 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
+}
+
+tasks.withType<BootBuildImage> {
+    imageName = projectDir.name
+    environment = mapOf("BP_JVM_version" to "${java.toolchain.languageVersion.get()}")
 }
 
 tasks.withType<Test> {
