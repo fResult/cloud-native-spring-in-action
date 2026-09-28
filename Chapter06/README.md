@@ -48,7 +48,10 @@ The organization repositories let each application's `.github/workflows/commit-s
 The mirrors have different Gradle project names: locally, `ch06-catalog-service` and `ch06-config-service`; in the organization, `catalog-service` and `config-service`. Local executable JAR filenames therefore have the `ch06-` prefix. The commands below account for this difference.
 
 > [!NOTE]
-> The current [Config Server configuration](config-service/src/main/resources/application.yml) still reads **[fResult/cloud-native-spring-config-repo](https://github.com/fResult/cloud-native-spring-config-repo)**, using the `main` label. Editing the local `config-repo/` directory or its organization mirror does not change the configuration served by this setup. To use the organization mirror, explicitly override `SPRING_CLOUD_CONFIG_SERVER_GIT_URI` on Config Service and publish configuration changes there.
+> The [Config Server configuration](config-service/src/main/resources/application.yml) reads **[fResult-PolarBookshop/config-repo](https://github.com/fResult-PolarBookshop/config-repo)**, using the `main` label.\
+> To update the configuration it serves, commit and push the configuration changes to that repository's `main` branch.\
+> Editing the local `config-repo/` directory or pushing changes only to this learning monorepo does not update the remote configuration repository.\
+> Catalog must then refresh its configuration through `POST /actuator/refresh` or restart to load the updated values.
 
 ## 3. Chapter Overview
 

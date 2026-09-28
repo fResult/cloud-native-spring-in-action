@@ -14,7 +14,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/fResult/cloud-native-spring-config-repo
+          uri: https://github.com/fResult-PolarBookshop/config-repo
           default-label: main
           timeout: 5
           clone-on-start: true
