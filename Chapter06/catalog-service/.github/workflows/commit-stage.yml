@@ -3,7 +3,7 @@ on: push
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: freuslt/catalog-service
+  IMAGE_NAME: fresult-polarbookshop/catalog-service
   VERSION: latest
 
 jobs:
@@ -38,7 +38,6 @@ jobs:
         if: success() || failure()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-
   package:
     name: Package and Publish
     if: ${{ github.ref == 'refs/heads/main' }}
