@@ -23,7 +23,6 @@ jobs:
           java-version: 26
           cache: gradle
       - name: Build, unit tests, and integration tests
-        working-directory: ${{ matrix.project }}
         run: |
           chmod +x gradlew
           ./gradlew build
