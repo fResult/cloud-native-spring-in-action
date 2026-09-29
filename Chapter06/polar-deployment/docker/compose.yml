@@ -38,8 +38,8 @@ services:
       - BPL_DEBUG_PORT=9888
     healthcheck:
       test:
-        ["CMD", "curl", "--fail", "--silent", "--show-error",
-        "--max-time", "10", "http://localhost:8888/catalog-service/default"]
+        ["CMD", "/layers/paketo-buildpacks_apt/apt/usr/bin/busybox", "wget",
+        "--spider", "-q", "-T", "10", "http://localhost:8888/catalog-service/default"]
       interval: 10s
       timeout: 12s
       retries: 6
