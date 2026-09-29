@@ -27,6 +27,7 @@ repositories {
  * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
  */
 extra["tomcat.version"] = "11.0.25"
+extra["jackson-bom.version"] = "3.1.6"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
@@ -63,18 +64,8 @@ dependencyManagement {
 }
 
 tasks.withType<BootBuildImage> {
-    buildpacks =
-        listOf(
-            "docker://docker.io/paketobuildpacks/apt:0.3.0",
-            "urn:cnb:builder:paketo-buildpacks/java",
-        )
-
     imageName = "${projectDir.name}:${project.version}"
-    environment =
-        mapOf(
-            "BP_JVM_VERSION" to "${java.toolchain.languageVersion.get()}",
-            "BP_APT_PACKAGES" to "busybox-static",
-        )
+    environment = mapOf("BP_JVM_VERSION" to "${java.toolchain.languageVersion.get()}")
 
     docker {
         publishRegistry {

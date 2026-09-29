@@ -7,7 +7,7 @@ services:
       polar-postgres:
         condition: service_started
       config-service:
-        condition: service_healthy
+        condition: service_started
 
     image: catalog-service
     container_name: catalog-service
@@ -36,15 +36,6 @@ services:
       # Buildpacks environment variable to enable debug through a socket on port 9888
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=9888
-    healthcheck:
-      test:
-        ["CMD", "/layers/paketo-buildpacks_apt/apt/usr/bin/busybox", "wget",
-        "--spider", "-q", "-T", "10", "http://localhost:8888/catalog-service/default"]
-      interval: 10s
-      timeout: 12s
-      retries: 6
-      start_period: 30s
-
   # Backing Services
 
   polar-postgres:

@@ -34,6 +34,7 @@ configurations {
  * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
  */
 extra["tomcat.version"] = "11.0.25"
+extra["jackson-bom.version"] = "3.1.6"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
@@ -46,6 +47,8 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
+    implementation("org.springframework.retry:spring-retry")
     compileOnly("org.projectlombok:lombok")
     implementation("io.vavr:vavr:1.0.1")
     implementation("io.vavr:vavr-jackson:1.0.0")
