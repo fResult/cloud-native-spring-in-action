@@ -64,13 +64,13 @@ dependencyManagement {
 
 tasks.withType<BootBuildImage> {
     imageName = "${projectDir.name}:${project.version}"
-    environment = mapOf("BP_JVM_version" to "${java.toolchain.languageVersion.get()}")
+    environment = mapOf("BP_JVM_VERSION" to "${java.toolchain.languageVersion.get()}")
 
     docker {
         publishRegistry {
-            url = providers.gradleProperty("registryUrl")
             username = providers.gradleProperty("registryUsername")
             password = providers.gradleProperty("registryToken")
+            url = providers.gradleProperty("registryUrl")
         }
     }
 }
