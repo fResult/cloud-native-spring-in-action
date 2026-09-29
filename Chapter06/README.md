@@ -275,8 +275,8 @@ To test the actual GHCR artifacts, pull and tag both images before following the
 docker pull ghcr.io/fresult-polarbookshop/catalog-service:latest
 docker pull ghcr.io/fresult-polarbookshop/config-service:latest
 
-docker tag ghcr.io/fresult-polarbookshop/catalog-service:latest catalog-service:latest
-docker tag ghcr.io/fresult-polarbookshop/config-service:latest config-service:latest
+docker tag ghcr.io/fresult-polarbookshop/catalog-service:latest catalog-service
+docker tag ghcr.io/fresult-polarbookshop/config-service:latest config-service
 ```
 
 These commands replace the local `:latest` tags used by Compose.\
@@ -302,6 +302,23 @@ Config Service currently maps `9988:9988` but configures `BPL_DEBUG_PORT=9888`; 
 Run these checks after the Compose services are ready.
 
 ### Verify Configuration and Database Connectivity
+
+Catalog may briefly accept a connection before it is ready.\
+Wait until its root endpoint returns successfully:
+
+```console
+→ until http --check-status :9001; do sleep 2; done
+
+http: error: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')) while doing a GET request to URL: http://localhost:9001/
+
+http: error: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')) while doing a GET request to URL: http://localhost:9001/
+
+...
+
+Welcome to the catalog from a fresh config server
+```
+
+Once Catalog Service is ready, verify the configuration and database endpoints:
 
 ```bash
 http --check-status :8888/catalog-service/testdata
@@ -347,8 +364,9 @@ http --check-status DELETE :9001/books/1234567893
 http GET :9001/books/1234567893
 ```
 
-Inspect the status codes and response fields; `--check-status` detects HTTP errors but does not assert an exact success status or response body. The update should retain `id` and `createdDate`, update the title/price, and increase `version`.\
-The service uses the database-loaded version for an existing book, so this example does not test stale-client conflict detection.
+Inspect the status codes and response fields; `--check-status` fails on HTTP error responses, but it does not assert the specific success status or response body described in the comments.\
+The update should retain `id` and `createdDate`, update the title/price, and increase `version`.\
+Because the service loads the current version from the database for an existing book, these commands do not test stale-client conflict handling.
 
 These are useful chapter-level smoke tests: they exercise real HTTP traffic through the published port, application startup, database migrations, reads/writes, and remote configuration.\
 Use them alongside the Gradle tests and image scans to check the assembled system.\
