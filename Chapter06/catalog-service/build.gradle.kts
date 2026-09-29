@@ -115,4 +115,6 @@ tasks.withType<BootRun> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Tests use Testcontainers for their dependencies and must not require a local Config Server.
+    systemProperty("spring.cloud.config.enabled", "false")
 }
