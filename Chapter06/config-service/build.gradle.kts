@@ -27,7 +27,7 @@ repositories {
  * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
  */
 extra["tomcat.version"] = "11.0.25"
-extra["jackson-bom.version"] = "3.1.6"
+extra["jackson-bom.version"] = "3.1.7"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
