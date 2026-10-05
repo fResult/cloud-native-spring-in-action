@@ -14,6 +14,10 @@ This repository is a personal learning workspace for following along with the bo
 > Instead, it was created from scratch to learn and practice the concepts hands-on.\
 > There might be some deviations from the book, such as using newer technologies like **Spring Boot 4**, exploring alternative approaches, or personal experimentation.
 
+> [!TIP]
+> To see CI/CD pipelines running in dedicated application repositories, visit [fResult-PolarBookshop](https://github.com/fResult-PolarBookshop).\
+> Its projects are extracted from the chapter-based work here, which is intentionally organized for learning rather than as independently deployable applications.
+
 ## API Examples and Persistence Fields
 
 The Chapter 5 Catalog Service uses the `Book` persistence record directly as the request and response body, without separate DTOs or DTO/entity mapping.\
@@ -37,14 +41,16 @@ Along the journey, you will need the following software installed.
   - GraalVM: [GraalVM](https://www.graalvm.org)
   - JDK Management: [SDKMAN](https://sdkman.io)
 - Docker 29+
-  - [Docker for Linux](https://docs.docker.com/engine/install/ubuntu/)
+  - [Docker for Linux](https://docs.docker.com/engine/install/ubuntu)
   - [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop)
   - [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
 - Kubernetes 1.30+
-  - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-  - [minikube](https://minikube.sigs.k8s.io/docs/)
+  - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl)
+  - [minikube](https://minikube.sigs.k8s.io/docs)
 - Other
-  - [HTTPie](https://httpie.org/)
+  - [HTTPie](https://httpie.org)
+  - [Tilt](https://tilt.dev)
+  - [Headlamp](https://headlamp.dev/docs/latest/installation/desktop)
 
 ## Gradle and Maven
 
@@ -103,6 +109,9 @@ The final project developed throughout the book is available [here](https://gith
 
 You can find the source code for the Angular frontend [here](https://github.com/PolarBookshop/polar-ui/tree/v1).
 
+To see the chapter projects that run CI/CD pipelines in dedicated repositories, visit
+[fResult-PolarBookshop](https://github.com/fResult-PolarBookshop).
+
 ## Book Forum
 
 Feel free to submit questions, feedback, or errata to the forum dedicated to "Cloud Native Spring in Action": https://livebook.manning.com/book/cloud-native-spring-in-action/.
@@ -111,3 +120,17 @@ Feel free to submit questions, feedback, or errata to the forum dedicated to "Cl
 
 You are very welcome to contact me for questions, feedback, or suggestions.\
 Feel free to reach out to me on [Twitter](https://twitter.com/vitalethomas), [LinkedIn](https://www.linkedin.com/in/vitalethomas), [Mastodon](https://mastodon.online/@thomasvitale), [BlueSky](https://bsky.app/profile/thomasvitale.com) or here on [GitHub](https://github.com/ThomasVitale/).
+
+<footer>
+  <div align=center>
+    <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>
+  </div>
+
+  <p align=center>
+    [This Space Intentionally Left Blank]
+  </p>
+
+  <p align=center>
+    The bottom of every page is padded so readers can maintain a consistent eyeline.
+  </p>
+</footer>

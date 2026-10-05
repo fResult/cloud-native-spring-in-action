@@ -187,3 +187,17 @@ Run the full test suite:
 ```bash
 ./gradlew test
 ```
+
+<footer>
+  <div align=center>
+    <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>
+  </div>
+
+  <p align=center>
+    [This Space Intentionally Left Blank]
+  </p>
+
+  <p align=center>
+    The bottom of every page is padded so readers can maintain a consistent eyeline.
+  </p>
+</footer>
