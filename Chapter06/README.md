@@ -176,11 +176,11 @@ A passing scan means no findings at the configured threshold for that scan, rath
 
 The three diagrams illustrate host access through published ports and direct communication between containers on the same network:
 
-![Host access to a containerized application through a published port](../images/01_port-mapping_containerized-app.png)
+![Host access to a containerized application through a published port](images/01_port-mapping_containerized-app.png)
 
-![A host application reaching a containerized database through its published port](../images/02_port-mapping_containers-interaction.png)
+![A host application reaching a containerized database through its published port](images/02_port-mapping_containers-interaction.png)
 
-![Application and database containers communicating on the same Docker network](../images/03_port-mapping_database.png)
+![Application and database containers communicating on the same Docker network](images/03_port-mapping_database.png)
 
 [Editable network diagrams](https://drawdy.io/share/fbd656f6ef33#key=-MluD3unCaqyArO6R_to9fmi1ceFfYf-ou8w87V-imA)
 
