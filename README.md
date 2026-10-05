@@ -36,6 +36,8 @@ Chapters 3 and 4 do not have a `version` field on `Book`.
 Chapter after chapter, you'll build, containerize, and deploy cloud native applications.\
 Along the journey, you will need the following software installed.
 
+### Core Tooling
+
 - Java 26+
   - OpenJDK: [Eclipse Temurin](https://adoptium.net)
   - GraalVM: [GraalVM](https://www.graalvm.org)
@@ -44,13 +46,16 @@ Along the journey, you will need the following software installed.
   - [Docker for Linux](https://docs.docker.com/engine/install/ubuntu)
   - [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop)
   - [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
-- Kubernetes 1.30+
+
+### Chapter-Specific and Optional Tooling
+
+- Kubernetes 1.30+ — required by the Kubernetes chapters
   - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl)
   - [minikube](https://minikube.sigs.k8s.io/docs)
-- Other
-  - [HTTPie](https://httpie.org)
-  - [Tilt](https://tilt.dev)
-  - [Headlamp](https://headlamp.dev/docs/latest/installation/desktop)
+- [HTTPie](https://httpie.org) — optional command-line HTTP client (you can use [Postman](https://www.postman.com) instead if you want to)
+- [Tilt](https://tilt.dev) — an optional tool that automates local image builds, Kubernetes deployments, logs, and port forwarding
+- [Headlamp](https://headlamp.dev/docs/latest/installation/desktop) — optional Kubernetes GUI (instead of [Octant](https://github.com/vmware-archive/octant))
+- [Kubeconform](https://kubeconform.mandragor.org/docs/installation) — optional Kubernetes manifest validation
 
 ## Gradle and Maven
 
@@ -66,7 +71,7 @@ Should you prefer Maven, here's a table mapping Gradle commands to Maven so that
 | `./gradlew bootRun`        | `./mvnw spring-boot:run`                     |
 | `./gradlew bootBuildImage` | `./mvnw spring-boot:build-image -DskipTests` |
 
-## Guides, Tools and Tips
+## Guides, Tools, and Tips
 
 - [Configuring IntelliJ IDEA](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Guides/configuring-intellij-idea.md)
 - [Configuring Visual Studio Code](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Guides/configuring-visual-studio-code.md)
@@ -114,7 +119,7 @@ To see the chapter projects that run CI/CD pipelines in dedicated repositories, 
 
 ## Book Forum
 
-Feel free to submit questions, feedback, or errata to the forum dedicated to "Cloud Native Spring in Action": https://livebook.manning.com/book/cloud-native-spring-in-action/.
+Feel free to submit questions, feedback, or errata to the forum dedicated to "Cloud Native Spring in Action": https://livebook.manning.com/book/cloud-native-spring-in-action.
 
 ## Contact the Author
 
