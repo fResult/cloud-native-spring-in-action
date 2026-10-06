@@ -10,16 +10,28 @@ custom_build(
   command = '''\
 set -eu
 image_ref="catalog-service:tilt-$(uuidgen | tr '[:upper:]' '[:lower:]')"
-./gradlew bootBuildImage --imageName "$image_ref"
+docker build --platform linux/arm64 --file Dockerfile.tilt-run --tag catalog-service-tilt-run:arm64 .
+./gradlew -PtiltDev bootBuildImage --imageName "$image_ref"
 minikube image load "$image_ref" --profile polar
 printf '%s' "$image_ref" > /tmp/catalog-service-tilt-image-ref
 ''',
-  # Files to watch that trigger a new docker_build
-  deps = ['build.gradle.kts', 'src'],
+  # Rebuild the image only when its build definition changes. Compiled output is watched for live updates, while src is compiled locally by Gradle/your IDE.
+  deps = [
+    'build.gradle.kts',
+    'settings.gradle.kts',
+    'gradle',
+    'gradlew',
+    'build/classes/java/main',
+    'build/resources/main',
+  ],
   # Use the ref loaded above instead of Tilt retagging and pushing it to a registry.
   outputs_image_ref_to = '/tmp/catalog-service-tilt-image-ref',
   # The image is already loaded into Minikube, will not push it to Docker Hub.
   disable_push = True,
+  live_update = [
+    sync('./build/classes/java/main', '/workspace/BOOT-INF/classes'),
+    sync('./build/resources/main', '/workspace/BOOT-INF/classes'),
+  ]
 )
 
 # Deploy
