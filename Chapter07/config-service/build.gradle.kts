@@ -1,3 +1,4 @@
+import org.springframework.boot.buildpack.platform.build.PullPolicy
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
@@ -34,6 +35,7 @@ extra["springCloudVersion"] = "2025.1.3"
 
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-config-server")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -65,7 +67,21 @@ dependencyManagement {
 
 tasks.withType<BootBuildImage> {
     imageName = "${projectDir.name}:${project.version}"
-    environment = mapOf("BP_JVM_VERSION" to "${java.toolchain.languageVersion.get()}")
+    val tiltDev = providers.gradleProperty("tiltDev").isPresent
+    // The multi-architecture Jammy buildpack currently ships JRE 25 and 27, not 26.
+    val jvmVersion = if (tiltDev) "27" else "${java.toolchain.languageVersion.get()}"
+    if (tiltDev) {
+        builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
+        buildpacks = listOf("docker://paketobuildpacks/java:latest")
+        runImage = "config-service-tilt-run:local"
+        // Keep the locally built dev run image but pull missing builder/buildpack images.
+        pullPolicy = PullPolicy.IF_NOT_PRESENT
+    }
+    environment =
+        mapOf(
+            "BP_JVM_VERSION" to jvmVersion,
+            "BP_LIVE_RELOAD_ENABLED" to if (tiltDev) "true" else "false",
+        )
 
     docker {
         publishRegistry {
