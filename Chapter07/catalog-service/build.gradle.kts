@@ -99,14 +99,13 @@ spotless {
 
 tasks.withType<BootBuildImage> {
     imageName = "${projectDir.name}:${project.version}"
-    val appleSilicon = System.getProperty("os.arch")?.lowercase()?.startsWith("aarch") == true
     val tiltDev = providers.gradleProperty("tiltDev").isPresent
-    // The ARM64 Jammy buildpack currently ships JRE 25 and 27, not 26.
-    val jvmVersion = if (tiltDev && appleSilicon) "27" else "${java.toolchain.languageVersion.get()}"
-    if (tiltDev && appleSilicon) {
+    // The multi-architecture Jammy buildpack currently ships JRE 25 and 27, not 26.
+    val jvmVersion = if (tiltDev) "27" else "${java.toolchain.languageVersion.get()}"
+    if (tiltDev) {
         builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
         buildpacks = listOf("docker://paketobuildpacks/java:latest")
-        runImage = "catalog-service-tilt-run:arm64"
+        runImage = "catalog-service-tilt-run:local"
         // Keep the locally built dev run image but pull missing builder/buildpack images.
         pullPolicy = PullPolicy.IF_NOT_PRESENT
     }
