@@ -436,6 +436,8 @@ unset ORG_GRADLE_PROJECT_registryToken GHCR_PAT
 An image reference such as `ghcr.io/<namespace>/catalog-service:0.0.1-SNAPSHOT` is used with Docker or deployment configuration.\
 View its tags and metadata on the corresponding GitHub **Packages** page.
 
+---
+
 <footer>
   <div align=center>
     <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>

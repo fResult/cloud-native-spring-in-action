@@ -30,11 +30,11 @@ For reference, the official source code for this chapter is available at:
 
 ## 2. Project Structure
 
-| Directory | Role in this chapter |
-| --- | --- |
+| Directory                            | Role in this chapter                                                                                |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------|
 | [catalog-service/](catalog-service/) | Catalog API with PostgreSQL persistence, JDBC auditing, Testcontainers tests, and Flyway migrations |
-| [config-service/](config-service/) | Spring Cloud Config Server carried forward from Chapter 4 |
-| [config-repo/](config-repo/) | Configuration files carried forward from Chapter 4 |
+| [config-service/](config-service/)   | Spring Cloud Config Server carried forward from Chapter 4                                           |
+| [config-repo/](config-repo/)         | Configuration files carried forward from Chapter 4                                                  |
 
 The configuration modules support the existing application setup. The new persistence work is in `catalog-service/`.
 
@@ -187,6 +187,8 @@ Run the full test suite:
 ```bash
 ./gradlew test
 ```
+
+---
 
 <footer>
   <div align=center>

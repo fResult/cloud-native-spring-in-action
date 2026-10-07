@@ -141,6 +141,8 @@ Hands-on coverage in this repo:
   - `config-repo` stores updated configuration (e.g. new `polar.greeting` values)
   - `config-service` serves the latest configuration from Git
 
+---
+
 <footer>
   <div align=center>
     <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>

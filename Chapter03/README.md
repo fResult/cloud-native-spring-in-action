@@ -209,6 +209,8 @@ You should see the port forwarding session log like this (appended after `Forwar
 Handling connection for 8000
 ```
 
+---
+
 <footer>
   <div align=center>
     <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>

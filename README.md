@@ -126,6 +126,8 @@ Feel free to submit questions, feedback, or errata to the forum dedicated to "Cl
 You are very welcome to contact me for questions, feedback, or suggestions.\
 Feel free to reach out to me on [Twitter](https://twitter.com/vitalethomas), [LinkedIn](https://www.linkedin.com/in/vitalethomas), [Mastodon](https://mastodon.online/@thomasvitale), [BlueSky](https://bsky.app/profile/thomasvitale.com) or here on [GitHub](https://github.com/ThomasVitale/).
 
+---
+
 <footer>
   <div align=center>
     <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>
