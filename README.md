@@ -119,7 +119,7 @@ To see the chapter projects that run CI/CD pipelines in dedicated repositories, 
 
 ## Book Forum
 
-Feel free to submit questions, feedback, or errata to the forum dedicated to "Cloud Native Spring in Action": https://livebook.manning.com/book/cloud-native-spring-in-action.
+Feel free to submit questions, feedback, or errata to the forum dedicated to "Cloud Native Spring in Action": <https://livebook.manning.com/book/cloud-native-spring-in-action>.
 
 ## Contact the Author
 
