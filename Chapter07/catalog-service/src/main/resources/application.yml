@@ -10,8 +10,8 @@ server:
 spring:
   application:
     name: catalog-service
-  lifecycle: # `server.shutdown` is `graceful` value by default
-    timeout-per-shutdown-phase: 15s
+  lifecycle: # `server.shutdown` is a ` graceful ` value by default
+    timeout-per-shutdown-phase: 15s # 30s is default
   config:
     import: "optional:configserver:"
   cloud:
