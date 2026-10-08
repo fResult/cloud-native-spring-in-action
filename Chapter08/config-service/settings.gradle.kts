@@ -1,1 +1,1 @@
-rootProject.name = "ch07-config-service"
+rootProject.name = "ch08-config-service"
