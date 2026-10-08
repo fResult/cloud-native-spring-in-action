@@ -26,6 +26,7 @@ repositories {
  */
 extra["tomcat.version"] = "11.0.26"
 extra["jackson-bom.version"] = "3.2.3"
+extra["jacksonAnnotationsVersion"] = "2.22"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -42,6 +43,18 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
+}
+
+dependencyManagement {
+    /*
+     * === Temporary Jackson compatibility override ===
+     * Spring Boot 4.1.1 pins Jackson Annotations 2.21, but Jackson BOM 3.2.3 requires 2.22.
+     * TODO: Remove after upgrading Spring Boot when dependencyInsight resolves jackson-annotations
+     * to 2.22 or later without this override.
+     */
+    dependencies {
+        dependency("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
+    }
 }
 
 spotless {
