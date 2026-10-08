@@ -3,6 +3,8 @@
 This chapter runs the Polar Bookshop development topology on a local Kubernetes cluster: **Config Service**, **Catalog Service**, and **PostgreSQL**.\
 It first shows the Kubernetes CLI mechanics, then makes the aggregate Tilt workflow the normal way to develop all services together.
 
+Original source code: [Thomas Vitale's Chapter 7 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter07/07-end).
+
 All commands start from **`Chapter07/`**.
 
 Make sure that you are in `Chapter07` directory.

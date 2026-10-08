@@ -9,6 +9,8 @@ Order Service also communicates with Catalog Service through Spring WebClient to
 Along the way, this chapter applies resilience patterns—including timeouts, retries, fallbacks, and error handling—to make remote calls more robust.\
 Finally, it covers testing reactive REST clients, data persistence, and controllers with Spring, Reactor, mock web servers, and Testcontainers.
 
+Original source code: [Thomas Vitale's Chapter 8 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter08/08-end).
+
 All commands start from **`Chapter08/`**.
 
 Make sure that you are in `Chapter08` directory.
