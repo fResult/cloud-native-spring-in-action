@@ -8,6 +8,7 @@ plugins {
 
 group = "com.polarbookshop"
 version = "0.0.1-SNAPSHOT"
+description = "Functionality for purchasing books"
 
 java {
     toolchain {
@@ -19,7 +20,18 @@ repositories {
     mavenCentral()
 }
 
+/*
+ * === Temporary security overrides ===
+ * Override Spring portfolio to address vulnerabilities reported by Grype.
+ * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
+ */
+extra["scramVersion"] = "3.4"
+extra["jackson-bom.version"] = "3.2.3"
+
 dependencies {
+    implementation("com.ongres.scram:scram-client:${property("scramVersion")}")
+    implementation("com.ongres.scram:scram-common:${property("scramVersion")}")
+
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -47,8 +59,7 @@ spotless {
 
         target("**/*.kt")
         targetExclude("**/build/**")
-        importOrder()
-        removeUnusedImports()
+
         trimTrailingWhitespace()
         leadingTabsToSpaces()
         endWithNewline()
