@@ -33,8 +33,8 @@ configurations {
  * Override Spring portfolio to address vulnerabilities reported by Grype.
  * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
  */
-extra["tomcat.version"] = "11.0.25"
-extra["jackson-bom.version"] = "3.1.7"
+extra["tomcat.version"] = "11.0.26"
+extra["jackson-bom.version"] = "3.2.3"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
