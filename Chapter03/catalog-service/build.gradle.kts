@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.10.1"
+    id("com.diffplug.spotless") version "8.10.3"
 }
 
 group = "com.polarbookshop"
@@ -50,16 +50,19 @@ spotless {
             .style("GOOGLE")
             .formatJavadoc(true)
 
-        importOrder()
-        removeUnusedImports()
-
         target("**/*.java")
         targetExclude("**/build/**")
+
+        importOrder()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        leadingTabsToSpaces()
+        endWithNewline()
     }
 
     kotlinGradle {
         ktlint()
-        target("*.gradle.kts")
+        target("*.gradle.kts", "settings.gradle.kts")
     }
 }
 
