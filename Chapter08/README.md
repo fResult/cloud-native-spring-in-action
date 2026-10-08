@@ -22,12 +22,13 @@ Make sure that you are in `Chapter08` directory.
 
 ## What is in this chapter?
 
-| Directory                             | Purpose                                                                                                      |
-|---------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| [config-service/](config-service)     | Spring Cloud Config Server on port `8888`                                                                    |
-| [catalog-service/](catalog-service)   | Catalog API on port `9001`; obtains external configuration from Config Service                               |
-| [config-repo/](config-repo)           | Configuration served by Config Service, local mirror of [fResult-PolarBookshop/config-repo][org-config-repo] |
-| [polar-deployment/](polar-deployment) | Docker Compose and Kubernetes manifests, including the aggregate development Tiltfile                        |
+| Directory                             | Purpose                                                                                                       |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| [config-service/](config-service)     | Spring Cloud Config Server on port `8888`                                                                     |
+| [order-service/](order-service)       | Reactive Order API; checks book availability with Catalog Service and persists orders to PostgreSQL via R2DBC |
+| [catalog-service/](catalog-service)   | Catalog API on port `9001`; obtains external configuration from Config Service                                |
+| [config-repo/](config-repo)           | Configuration served by Config Service, local mirror of [fResult-PolarBookshop/config-repo][org-config-repo]  |
+| [polar-deployment/](polar-deployment) | Docker Compose and Kubernetes manifests, including the aggregate development Tiltfile                         |
 
 ## Prerequisites
 
