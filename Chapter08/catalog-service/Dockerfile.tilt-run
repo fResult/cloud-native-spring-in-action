@@ -1,0 +1,7 @@
+# The Paketo tiny run image supports ARM64 but intentionally omits shell tools.
+# Tilt Live Update transfers files with tar and removes stale files with rm.
+FROM busybox:1.38-musl AS tools
+
+FROM paketobuildpacks/run-jammy-tiny:latest
+COPY --from=tools /bin/busybox /bin/tar
+COPY --from=tools /bin/busybox /bin/rm
