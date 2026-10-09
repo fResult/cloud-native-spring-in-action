@@ -29,8 +29,14 @@ extra["scramVersion"] = "3.4"
 extra["jackson-bom.version"] = "3.2.3"
 
 dependencies {
-    implementation("com.ongres.scram:scram-client:${property("scramVersion")}")
-    implementation("com.ongres.scram:scram-common:${property("scramVersion")}")
+    constraints {
+        implementation("com.ongres.scram:scram-client:${property("scramVersion")}") {
+            because("Scram API vulnerability")
+        }
+        implementation("com.ongres.scram:scram-common:${property("scramVersion")}") {
+            because("Scram API vulnerability")
+        }
+    }
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
