@@ -12,8 +12,8 @@ import kotlin.time.Instant
 data class Order(
     @Id val id: Long? = null,
     val bookIsbn: String,
-    val bookName: String,
-    val bookPrice: BigDecimal,
+    val bookName: String?,
+    val bookPrice: BigDecimal?,
     val quantity: Int,
     val status: OrderStatus,
     @CreatedDate val createdDate: Instant? = null,
