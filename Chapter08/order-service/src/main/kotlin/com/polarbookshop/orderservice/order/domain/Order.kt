@@ -23,8 +23,8 @@ data class Order(
     companion object {
         fun of(
             bookIsbn: String,
-            bookName: String,
-            bookPrice: BigDecimal,
+            bookName: String? = null,
+            bookPrice: BigDecimal? = null,
             quantity: Int,
             status: OrderStatus,
         ): Order = Order(bookIsbn = bookIsbn, bookName = bookName, bookPrice = bookPrice, quantity = quantity, status = status, version = 0)
