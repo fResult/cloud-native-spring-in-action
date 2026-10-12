@@ -6,7 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
-import kotlin.time.Instant
+import java.time.Instant
 
 @Table("orders")
 data class Order(
