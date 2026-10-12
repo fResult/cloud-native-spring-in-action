@@ -25,6 +25,7 @@ repositories {
  * Override Spring portfolio to address vulnerabilities reported by Grype.
  * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
  */
+extra["jacksonAnnotationsVersion"] = "2.22"
 extra["scramVersion"] = "3.4"
 extra["jackson-bom.version"] = "3.2.3"
 
@@ -33,6 +34,7 @@ dependencies {
         implementation("com.ongres.scram:scram-client:${property("scramVersion")}") {
             because("Scram API vulnerability")
         }
+
         implementation("com.ongres.scram:scram-common:${property("scramVersion")}") {
             because("Scram API vulnerability")
         }
@@ -62,6 +64,12 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-r2dbc")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+dependencyManagement {
+    dependencies {
+        dependency("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
+    }
 }
 
 spotless {
