@@ -41,6 +41,7 @@ dependencies {
     }
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-webclient")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -56,6 +57,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("org.springframework.boot:spring-boot-starter-data-r2dbc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
