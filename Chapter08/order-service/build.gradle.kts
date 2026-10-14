@@ -120,4 +120,8 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
+    // Tests use local application properties and provision PostgreSQL only.
+    // Disable the Config Client because this test suite does not provision a Config Server.
+    systemProperty("spring.cloud.config.enabled", "false")
 }
