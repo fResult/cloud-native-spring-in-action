@@ -29,6 +29,9 @@ extra["jacksonAnnotationsVersion"] = "2.22"
 extra["scramVersion"] = "3.4"
 extra["jackson-bom.version"] = "3.2.3"
 
+// === Explicit BOM selection ===
+extra["springCloudVersion"] = "2025.1.3"
+
 dependencies {
     constraints {
         implementation("com.ongres.scram:scram-client:${property("scramVersion")}") {
@@ -40,11 +43,13 @@ dependencies {
         }
     }
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webclient")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -56,6 +61,7 @@ dependencies {
     runtimeOnly("org.postgresql:r2dbc-postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-r2dbc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
@@ -73,6 +79,10 @@ dependencies {
 dependencyManagement {
     dependencies {
         dependency("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
+    }
+
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
 }
 
