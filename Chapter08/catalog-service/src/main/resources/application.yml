@@ -37,7 +37,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh,env
+        include: refresh,health,env
 
 polar:
   greeting: Welcome to the local book catalog!
