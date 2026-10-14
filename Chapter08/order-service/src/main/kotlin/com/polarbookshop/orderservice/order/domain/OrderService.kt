@@ -24,7 +24,7 @@ class OrderService(
         bookClient
             .getBookByIsbn(isbn)
             .map { book -> buildAcceptedOrder(book, quantity) }
-            .onErrorResume(WebClientResponseException.NotFound::class) { Mono.just(buildRejectedOrder(isbn, quantity)) }
+            .onErrorResume(WebClientResponseException.NotFound::class, rejectWhenBookIsNotFoundFor(isbn, quantity))
             .onErrorResume(WebClientRequestException::class, rejectWhenCatalogReadTimeoutFor(isbn, quantity))
             .flatMap(orderRepository::save)
 
@@ -32,6 +32,11 @@ class OrderService(
         book: Book,
         quantity: Int,
     ): Order = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
+
+    private fun rejectWhenBookIsNotFoundFor(
+        isbn: String,
+        quantity: Int,
+    ): (WebClientResponseException.NotFound) -> Mono<Order> = { _ -> Mono.just(buildRejectedOrder(isbn, quantity)) }
 
     private fun rejectWhenCatalogReadTimeoutFor(
         isbn: String,
