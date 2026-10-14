@@ -2,4 +2,4 @@ polar:
   catalog-service:
     url: http://catalog-service
     connect-timeout: 3s
-    resposne-timeout: 3s
+    response-timeout: 3s
