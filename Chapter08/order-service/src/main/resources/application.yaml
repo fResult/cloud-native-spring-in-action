@@ -9,6 +9,19 @@ spring:
     name: order-service
   lifecycle: # `server.shutdown` is a ` graceful ` value by default
     timeout-per-shutdown-phase: 15s # 30s is default
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+      request-connect-timeout: 5000
+      request-read-timeout: 5000
+      fail-fast: true
+      retry:
+        max-attempts: 10
+        initial-interval: 1000 # 1s
+        max-interval: 2000 # 2s
+        multiplier: 1.1
   r2dbc:
     username: user
     password: password
@@ -22,5 +35,12 @@ spring:
     password: ${spring.r2dbc.password}
     url: jdbc:postgresql://localhost:5432/polardb_order
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,env
+
 polar:
-  catalog-service-url: http://localhost:9001
+  catalog-service:
+    url: http://localhost:9001

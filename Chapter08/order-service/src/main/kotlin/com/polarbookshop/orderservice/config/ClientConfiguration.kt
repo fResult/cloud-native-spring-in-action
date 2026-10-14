@@ -29,23 +29,25 @@ class ClientConfiguration {
 
     @Bean
     fun webClient(
-        polarProperties: PolarProperties,
+        catalogServiceProperties: CatalogServiceProperties,
         baseHttpClient: HttpClient,
         timeoutFilter: ExchangeFilterFunction,
         webClientBuilder: WebClient.Builder,
     ): WebClient =
         webClientBuilder
-            .baseUrl(polarProperties.catalogServiceUrl.toString())
+            .baseUrl(catalogServiceProperties.url.toString())
             .clientConnector(ReactorClientHttpConnector(baseHttpClient))
             .filter(timeoutFilter)
             .build()
 
     @Bean
-    fun baseHttpClient(): HttpClient =
+    fun baseHttpClient(properties: CatalogServiceProperties): HttpClient =
         HttpClient
             .create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
-            .responseTimeout(7.seconds.toJavaDuration())
+            .option(
+                ChannelOption.CONNECT_TIMEOUT_MILLIS,
+                properties.connectTimeout.toMillis().toInt(),
+            ).responseTimeout(properties.responseTimeout)
 
     @Bean
     fun timeoutFilter(baseHttpClient: HttpClient): ExchangeFilterFunction =
