@@ -14,8 +14,8 @@ interface BookClient {
     @RequestTimeout(3)
     fun fetchBooks(): Flux<Book>
 
-    @GetExchange("/{isbn}")
     @RequestTimeout(3)
+    @GetExchange("/{isbn}")
     fun getBookByIsbn(
         @PathVariable isbn: String,
     ): Mono<Book>
