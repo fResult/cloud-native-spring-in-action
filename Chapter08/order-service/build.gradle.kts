@@ -31,6 +31,7 @@ extra["jackson-bom.version"] = "3.2.3"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
+extra["okhttp.version"] = "5.5.0"
 
 dependencies {
     constraints {
@@ -75,6 +76,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-r2dbc")
+    testImplementation("com.squareup.okhttp3:mockwebserver3-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
