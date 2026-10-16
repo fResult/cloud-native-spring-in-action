@@ -4,18 +4,24 @@ import com.polarbookshop.orderservice.config.BookClient
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
-import okhttp3.Headers
+import okhttp3.Headers.Companion.headersOf
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import reactor.test.StepVerifier
+import tools.jackson.databind.ObjectMapper
+import java.math.BigDecimal
 import kotlin.test.Test
 
 class BookClientTest {
     @field:StartStop
     private val mockWebServer: MockWebServer = MockWebServer()
+
+    val mapper = ObjectMapper()
+    val responseWith = mockWebServer.responseWith(mapper)
 
     private val bookClient by lazy {
         val webClient = WebClient.create(mockWebServer.url("/").toString())
@@ -26,33 +32,26 @@ class BookClientTest {
 
     @Test
     fun `when book exists then return book`() {
-        val isbn = "1234567890"
-        val headers =
-            Headers.headersOf(
-                HttpHeaders.CONTENT_TYPE,
-                MediaType.APPLICATION_JSON_VALUE,
-            )
-        val body =
-            """
-            {
-              "isbn": "$isbn",
-              "title": "Title",
-              "author": "Author",
-              "price": 9.90,
-              "publisher": "Polarsophia"
-            }
-            """.trimIndent()
-        val mockResponse =
-            MockResponse()
-                .newBuilder()
-                .headers(headers)
-                .body(body)
-                .build()
+        // Given
+        val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
+        responseWith(expectedBook, HttpStatus.OK)
 
-        mockWebServer.enqueue(mockResponse)
+        // When
+        val book = bookClient.getBookByIsbn(expectedBook.isbn)
 
-        val book = bookClient.getBookByIsbn(isbn)
-
-        StepVerifier.create(book).expectNextMatches { b -> b.isbn == isbn }.verifyComplete()
+        // Then
+        StepVerifier
+            .create(book)
+            .expectNext(expectedBook)
+            .verifyComplete()
     }
 }
+
+private fun MockWebServer.responseWith(mapper: ObjectMapper): (Book, HttpStatus) -> Unit =
+    { book, status ->
+        val headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        val mockResponse =
+            MockResponse(code = status.value(), headers = headers, body = mapper.writeValueAsString(book))
+
+        enqueue(mockResponse)
+    }
