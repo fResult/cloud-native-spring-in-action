@@ -6,6 +6,7 @@ import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
 import okhttp3.Headers.Companion.headersOf
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
@@ -16,6 +17,7 @@ import reactor.test.StepVerifier
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class BookClientTest {
     @field:StartStop
@@ -49,6 +51,10 @@ class BookClientTest {
             .expectNext(expectedBooks.first())
             .expectNext(expectedBooks[1])
             .verifyComplete()
+
+        val request = mockWebServer.takeRequest()
+        assertEquals(HttpMethod.GET.name(), request.method)
+        assertEquals("/books", request.target)
     }
 
     @Test
@@ -74,6 +80,10 @@ class BookClientTest {
 
         // Then
         StepVerifier.create(actualBook).expectNext(expectedBook).verifyComplete()
+
+        val request = mockWebServer.takeRequest()
+        assertEquals(HttpMethod.GET.name(), request.method)
+        assertEquals("/books/${expectedBook.isbn}", request.target)
     }
 
     @Test
