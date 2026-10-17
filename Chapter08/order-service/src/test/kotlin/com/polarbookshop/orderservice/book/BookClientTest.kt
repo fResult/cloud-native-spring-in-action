@@ -59,11 +59,26 @@ class BookClientTest {
     }
 }
 
-private fun MockWebServer.responseWith(mapper: ObjectMapper): (Book, HttpStatus) -> Unit =
-    { book, status ->
-        val headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        val mockResponse =
-            MockResponse(code = status.value(), headers = headers, body = mapper.writeValueAsString(book))
+interface MockResponseEnqueuer {
+    operator fun <T> invoke(
+        response: T? = null,
+        status: HttpStatus = HttpStatus.OK,
+    )
+}
 
-        enqueue(mockResponse)
+private fun MockWebServer.responseWith(mapper: ObjectMapper): MockResponseEnqueuer =
+    object : MockResponseEnqueuer {
+        override fun <T> invoke(
+            response: T?,
+            status: HttpStatus,
+        ) {
+            val headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            val mockResponse =
+                MockResponse(
+                    code = status.value(),
+                    headers = headers,
+                    body = response.let { mapper.writeValueAsString(it) }.orEmpty(),
+                )
+            enqueue(mockResponse)
+        }
     }
