@@ -32,6 +32,26 @@ class BookClientTest {
     }
 
     @Test
+    fun `when books exist then return books`() {
+        val expectedBooks =
+            listOf(
+                Book("1234567891", "Title1", "Author1", BigDecimal.valueOf(19.90)),
+                Book("1234567892", "Title2", "Author2", BigDecimal.valueOf(12.90)),
+            )
+        responseWith(expectedBooks)
+
+        // WHen
+        val actualBooks = bookClient.fetchBooks()
+
+        // Then
+        StepVerifier
+            .create(actualBooks)
+            .expectNext(expectedBooks.first())
+            .expectNext(expectedBooks[1])
+            .verifyComplete()
+    }
+
+    @Test
     fun `when book exists then return book`() {
         // Given
         val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
