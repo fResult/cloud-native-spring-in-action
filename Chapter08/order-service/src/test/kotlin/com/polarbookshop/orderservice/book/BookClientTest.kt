@@ -52,6 +52,18 @@ class BookClientTest {
     }
 
     @Test
+    fun `when no books exist then complete without emitting books`() {
+        // Given
+        responseWith(response = emptyList<Book>())
+
+        // When
+        val notFoundBook = bookClient.fetchBooks()
+
+        // Then
+        StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
+    }
+
+    @Test
     fun `when book exists then return book`() {
         // Given
         val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
