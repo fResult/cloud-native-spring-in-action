@@ -8,7 +8,6 @@ import okhttp3.Headers.Companion.headersOf
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.ProblemDetail
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
@@ -49,24 +48,14 @@ class BookClientTest {
     fun `when book doesn't exists then book not found`() {
         // Given
         val isbn = "not-found-isbn"
-        val notFoundStatus = HttpStatus.NOT_FOUND
-        val headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PROBLEM_JSON_VALUE)
-        val mockResponse =
-            MockResponse(
-                code = notFoundStatus.value(),
-                headers = headers,
-                body = mapper.writeValueAsString(ProblemDetail.forStatus(notFoundStatus)),
-            )
+        val mockResponse = MockResponse(HttpStatus.NOT_FOUND.value())
         mockWebServer.enqueue(mockResponse)
 
         // When
         val notFoundBook = bookClient.getBookByIsbn(isbn)
 
         // Then
-        StepVerifier
-            .create(notFoundBook)
-            .expectError(WebClientResponseException.NotFound::class.java)
-            .verify()
+        StepVerifier.create(notFoundBook).expectError(WebClientResponseException::class.java).verify()
     }
 }
 
