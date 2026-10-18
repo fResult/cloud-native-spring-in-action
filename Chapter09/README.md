@@ -9,3 +9,14 @@ You will make service calls more fault-tolerant with Spring Cloud Circuit Breake
 The chapter then uses Redis for request rate limiting and distributed web sessions, before introducing Kubernetes Ingress for managing external traffic into the cluster.
 
 Original source code: [Thomas Vitale's Chapter 9 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter09/09-end).
+
+---
+
+All commands start from **`Chapter09/`**.
+
+Make sure that you are in `Chapter09` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter09
+```

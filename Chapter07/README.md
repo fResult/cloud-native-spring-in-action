@@ -1,9 +1,21 @@
 # Chapter 7 – Kubernetes Fundamentals for Spring Boot
 
-This chapter runs the Polar Bookshop development topology on a local Kubernetes cluster: **Config Service**, **Catalog Service**, and **PostgreSQL**.\
-It first shows the Kubernetes CLI mechanics, then makes the aggregate Tilt workflow the normal way to develop all services together.
+This chapter moves the Polar Bookshop system from Docker to Kubernetes.\
+Docker and Docker Compose are convenient for building and running containers locally, but Kubernetes provides the scalability and resilience needed when containers fail, hosts go down, or applications need more instances.
+
+As a developer, you do not need to configure or operate a production Kubernetes cluster; that is normally the responsibility of a cloud provider or a platform team.\
+You will use a local Minikube cluster to learn Kubernetes fundamentals before deploying to a managed Kubernetes service later in the book.
+
+You will create and manage Pods, Deployments, and Services for Spring Boot applications, including Kubernetes service discovery and load balancing.\
+The chapter also covers cloud-native disposability through fast startup and graceful shutdown, application scaling, a local development workflow with Tilt, and Kubernetes manifest validation in the GitHub Actions commit stage.
 
 Original source code: [Thomas Vitale's Chapter 7 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter07/07-end).
+
+> [!NOTE]
+> The book uses Octant to visualize Kubernetes workloads and Kubeval to validate manifests.\
+> Both tools are no longer actively developed, so this project uses **Headlamp** and **Kubeconform** as their maintained alternatives.
+
+---
 
 All commands start from **`Chapter07/`**.
 

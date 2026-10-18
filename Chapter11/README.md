@@ -10,3 +10,14 @@ With Spring Security, you will protect the application, inspect the authenticate
 The chapter adds an Angular single-page application (SPA), secures its authentication flow, protects it against cross-site request forgery (CSRF), and tests the Spring Security and OpenID Connect integration.
 
 Original source code: [Thomas Vitale's Chapter 11 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter11/11-end).
+
+---
+
+All commands start from **`Chapter11/`**.
+
+Make sure that you are in `Chapter11` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter11
+```

@@ -1,12 +1,26 @@
-# Chapter 3 - Getting Started with Cloud Native Development
+# Chapters 2–3 – Cloud Native Patterns and Getting Started with Development
 
-This chapter focuses on building and testing a RESTful application with **Spring Boot and Spring MVC**, while exploring the fundamentals of cloud native application development.
+This directory combines the hands-on material for Chapters 2 and 3.\
+Chapter 2 establishes a mental map for cloud-native development: the 15-Factor methodology, Spring Boot, OCI container images built with Docker and Buildpacks, and Kubernetes resources such as Deployments, Pods, and Services.
 
-We start by bootstrapping a Spring Boot project and understanding how embedded servers and the thread-per-request model work.\
-We then build a REST API, add data validation and error handling, and consider how to evolve APIs for future requirements.
+Chapter 3 applies those concepts by building the Polar Bookshop Catalog Service, a web application that exposes a REST API over HTTP.\
+You will bootstrap the project, work with Spring Boot's embedded Tomcat server and its thread-per-request model, and implement an API-first Spring MVC application with validation and centralized error handling.
 
-The chapter also covers testing at different levels using **JUnit and Spring Boot testing support**, including unit tests, integration tests, controller tests, and JSON serialization tests.\
-Finally, we implement the **commit stage of a deployment pipeline** with GitHub Actions to automatically build and test the application.
+The chapter also tests the application at several levels using JUnit and Spring Boot test slices, including `@SpringBootTest`, `@WebMvcTest`, and `@JsonTest`.\
+Finally, it implements the commit stage of a deployment pipeline with GitHub Actions to build and test the application automatically.
+
+Original source code: [Thomas Vitale's Chapter 2 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter02/02-end) and [Chapter 3 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter03/03-end).
+
+---
+
+All commands start from **`Chapter03/`**.
+
+Make sure that you are in `Chapter03` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter03
+```
 
 ## Prerequisites
 
@@ -20,7 +34,7 @@ Finally, we implement the **commit stage of a deployment pipeline** with GitHub 
 
 ### Running Grype
 
-After building the project (`./gradlew build`), from the project root directory, scan for vulnerabilities:
+After building Catalog Service (`(cd catalog-service && ./gradlew build)`), scan the Chapter03 project directory for vulnerabilities:
 
 ```console
 → grype .
@@ -37,12 +51,9 @@ No vulnerabilities found
 
 The output will list any discovered vulnerabilities.
 
-> [!NOTE]
-> The official source code for this chapter is available at [ThomasVitale/cloud-native-spring-in-action/Chapter03/03-end/catalog-service](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter03/03-end/catalog-service).
-
 ### Testing the REST API
 
-After starting the application (e.g., using `./gradlew bootRun`), you can use HTTPie to test the REST API.
+After starting the application (for example, with `(cd catalog-service && ./gradlew bootRun)`), you can use HTTPie to test the REST API.
 
 First, from a terminal, add a new book to the catalog using the `POST /books` endpoint:
 

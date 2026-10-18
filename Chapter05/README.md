@@ -1,25 +1,27 @@
 # Chapter 5 – Persisting and Managing Data in the Cloud
 
-This chapter focuses on persisting and managing application data in cloud native Spring applications.
+This chapter introduces data services and persistence for the Polar Bookshop system.\
+Application services should remain stateless in a cloud environment, but the Catalog Service needs persistent storage: without it, its book data disappears whenever the application stops and the service cannot scale horizontally.
 
-You start by:
+State is everything that must be preserved when a service shuts down and a new instance starts.\
+Data services are the stateful parts of a cloud-native system, including data stores such as PostgreSQL, Cassandra, and Redis, as well as messaging systems such as RabbitMQ and Apache Kafka.
 
-- Exploring **databases for cloud native systems**, data services in the cloud, and running **PostgreSQL as a container** (5.1)
-- Implementing persistence with **Spring Data JDBC**, including database connections, persistent entities, auditing, and repositories (5.2)
+You will use Docker to run PostgreSQL locally, while production deployments use a managed cloud data service.\
+The chapter adds a persistence layer to Catalog Service with Spring Data JDBC, tests it with Spring Boot and Testcontainers, and manages database initialization and versioned schema changes with Flyway.
 
-Then you:
+Original source code: [Thomas Vitale's Chapter 5 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter05/05-end).
 
-- Test data persistence with **Testcontainers**, using both **@DataJdbcTest** and **@SpringBootTest** (5.3)
-- Manage database schema changes with **Flyway**, from schema initialization to versioned migrations (5.4)
+All commands start from **`Chapter05/`**.
 
-This builds on the cloud native principles introduced in Chapters 1–2, the RESTful Catalog Service developed in Chapter 3, and the externalized configuration from Chapter 4. Chapter 6 continues with packaging Spring Boot applications as container images, managing them with Docker Compose, and publishing them through a deployment pipeline.
+Make sure that you are in `Chapter05` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter05
+```
 
 > [!NOTE]
 > This repository includes local PostgreSQL setup, JDBC persistence and auditing, repository and application tests, and two Flyway migrations. The examples below focus on that local development flow; managed cloud database provisioning and production database operations are not documented here.
-
-For reference, the official source code for this chapter is available at:
-
-> [ThomasVitale/cloud-native-spring-in-action/Chapter05/05-end](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter05/05-end)
 
 ## 1. Prerequisites
 

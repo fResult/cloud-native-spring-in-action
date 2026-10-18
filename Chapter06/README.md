@@ -1,19 +1,29 @@
 # Chapter 6 – Containerizing Spring Boot
 
-This chapter packages the Catalog Service and Config Service as container images and runs them with PostgreSQL using Docker Compose.
+This chapter prepares the Polar Bookshop services for deployment to Kubernetes by packaging Spring Boot applications as container images and managing their life cycles.\
+Building on the Catalog Service REST API and its PostgreSQL persistence from the previous chapters, you will create the portable application images needed to deploy the system.
 
-You start by:
+You will learn the essential characteristics of container images and work with them using Docker.\
+Although this chapter uses Docker terminology, the images follow the Open Container Initiative (OCI) Image Specification and can run with any compatible container runtime.
 
-- Building a small Java runtime image and learning how containers, images, and registries relate
-- Packaging Spring Boot applications with Dockerfiles, including layers, multi-stage builds, and a non-root runtime user
+The chapter explores two ways to build production-ready Spring Boot images: Dockerfiles and Cloud Native Buildpacks.\
+Along the way, it considers performance and security concerns, including image layers, efficient builds, and running containers as a non-root user.
 
-Then you:
+You will then use Docker Compose to manage multiple containers and their life cycles, including the Catalog Service, Config Service, and PostgreSQL.\
+Finally, you will extend the deployment pipeline's commit stage with GitHub Actions to package, scan, and publish container images automatically to GitHub Container Registry.
 
-- Build application images with **Cloud Native Buildpacks** and scan them with **Grype**
-- Connect the applications and PostgreSQL through **Docker networking** and **Docker Compose**
-- Build, test, scan, and publish images to **GitHub Container Registry (GHCR)** through GitHub Actions
+Original source code: [Thomas Vitale's Chapter 6 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter06/06-end).
 
-This builds on Chapter 4's externalized configuration and Chapter 5's JDBC persistence, Testcontainers tests, and Flyway migrations.
+---
+
+All commands start from **`Chapter06/`**.
+
+Make sure that you are in `Chapter06` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter06
+```
 
 > [!NOTE]
 > The automated pipeline currently covers the **commit stage**: build, test, scan, package, and publish.\
@@ -28,9 +38,6 @@ This builds on Chapter 4's externalized configuration and Chapter 5's JDBC persi
 - **Grype**, for the optional local vulnerability scan
 - Internet access for dependencies, container images, and the Config Server's Git backend
 - The included **Gradle Wrappers**; a separate Gradle installation is unnecessary
-
-All commands below start from **`Chapter06/`**.\
-Subshells such as `(cd catalog-service && ...)` keep your terminal in that directory afterward.
 
 Stop containers from previous chapters if they already use the names `catalog-service`, `config-service`, or `polar-postgres`, or ports `9001`, `8888`, or `5432`.
 

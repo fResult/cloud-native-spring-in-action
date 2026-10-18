@@ -10,3 +10,14 @@ The chapter also uses Spring Data auditing to record who creates or changes data
 Finally, you will test authorization, JWT-based security, and service integration with Spring Boot, Spring Security, Testcontainers, and Keycloak.
 
 Original source code: [Thomas Vitale's Chapter 12 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter12/12-end).
+
+---
+
+All commands start from **`Chapter12/`**.
+
+Make sure that you are in `Chapter12` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter12
+```

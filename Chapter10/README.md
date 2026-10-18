@@ -10,3 +10,14 @@ With Spring Cloud Stream, you will bind functions to RabbitMQ message channels, 
 The chapter also covers event consumers and producers, including idempotency for safe event consumption and atomicity for reliable event production.
 
 Original source code: [Thomas Vitale's Chapter 10 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter10/10-end).
+
+---
+
+All commands start from **`Chapter10/`**.
+
+Make sure that you are in `Chapter10` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter10
+```

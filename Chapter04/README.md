@@ -1,14 +1,26 @@
 # Chapter 4 – Externalized Configuration Management
 
-This chapter focuses on managing application configuration externally in cloud native Spring applications.
+This chapter introduces externalized configuration management for cloud-native Spring applications.\
+The Catalog Service already uses `application.yml` to configure settings such as Tomcat's thread pool and connection timeout, but each deployment environment can need different values for the same application.
 
-You start by:
-- Understanding **properties** and **profiles** in Spring (4.1)
-- Learning how to externalize configuration using **command-line arguments**, **JVM system properties**, and **environment variables** (4.2)
+Configuration is everything likely to change between deployments, including credentials, backing-service resource handles, and URLs.\
+Cloud-native applications keep their build immutable across environments: each release combines the same application build with environment-specific configuration, rather than creating a separate artifact whenever configuration changes.
 
-Then you:
-- Build a **centralized configuration management** solution using **Spring Cloud Config Server** with Git as the configuration data store (4.3)
-- Configure applications as **Spring Cloud Config Clients**, make them resilient, and **refresh configuration at runtime** (4.4)
+You will configure Spring through properties and profiles, then apply external configuration through command-line arguments, JVM system properties, and environment variables.\
+The chapter also uses Git as a configuration store, Spring Cloud Config Server to serve it centrally, and Spring Cloud Config Client to configure and refresh applications at runtime.
+
+Original source code: [Thomas Vitale's Chapter 4 final project](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter04/04-end).
+
+---
+
+All commands start from **`Chapter04/`**.
+
+Make sure that you are in `Chapter04` directory.
+
+```console
+→ pwd
+/path/to/cloud-native-spring-in-action/Chapter04
+```
 
 > [!NOTE]
 > The notes in this repository currently cover:
@@ -18,10 +30,6 @@ Then you:
 >
 > The coverage for 4.4 is focused on the main hands-on flow (client setup, resilience, and manual refresh).\
 > More advanced production scenarios (e.g. Spring Cloud Bus, webhooks, secrets management) are not documented here.
-
-For reference, the official source code for this chapter is available at:
-
-> [ThomasVitale/cloud-native-spring-in-action/Chapter04/04-end](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/Chapter04/04-end)
 
 ## 1. Prerequisites
 
