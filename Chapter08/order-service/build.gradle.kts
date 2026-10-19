@@ -29,6 +29,10 @@ extra["jacksonAnnotationsVersion"] = "2.22"
 extra["scramVersion"] = "3.4"
 extra["jackson-bom.version"] = "3.2.3"
 
+// === Explicit dependency versions ===
+extra["mockkVersion"] = "1.14.11"
+extra["springMockKVersion"] = "5.0.1"
+
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
 extra["okhttp.version"] = "5.5.0"
@@ -77,6 +81,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-r2dbc")
     testImplementation("com.squareup.okhttp3:mockwebserver3-junit5")
+    testImplementation("io.mockk:mockk-jvm:${property("mockkVersion")}")
+    testImplementation("io.mockk:mockk-bdd:${property("mockkVersion")}")
+    testImplementation("com.ninja-squad:springmockk:${property("springMockKVersion")}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
