@@ -7,6 +7,7 @@ import org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest
 import org.springframework.context.annotation.Import
 import reactor.test.StepVerifier
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @DataR2dbcTest
 @Import(DataConfiguration::class, TestContainersConfiguration::class)
@@ -25,9 +26,9 @@ class OrderRepositoryR2dbcTest {
         // Then
         StepVerifier
             .create(savedRejectedOrder)
-            .expectNextMatches { actualRejectedOrder ->
-                actualRejectedOrder.status == OrderStatus.REJECTED &&
-                    expectedRejectedOrder.bookIsbn == actualRejectedOrder.bookIsbn
+            .assertNext { actualRejectedOrder ->
+                assertEquals(expectedRejectedOrder.status, actualRejectedOrder.status)
+                assertEquals(expectedRejectedOrder.bookIsbn, actualRejectedOrder.bookIsbn)
             }.verifyComplete()
     }
 }
