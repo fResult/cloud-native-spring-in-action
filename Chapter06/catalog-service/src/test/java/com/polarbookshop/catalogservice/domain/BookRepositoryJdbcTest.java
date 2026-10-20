@@ -17,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 @DataJdbcTest
-@Testcontainers
 @Import({DataConfiguration.class, TestContainersConfiguration.class})
 class BookRepositoryJdbcTest {
   @Autowired
@@ -39,7 +37,6 @@ class BookRepositoryJdbcTest {
 
     // When
     val actualBooks = bookRepository.findAll();
-    //    val actualBookIsbns = actualBooks.map(Book::isbn);
 
     // Then
     assertThat(actualBooks.filter(isBook1OrBook2(book1.isbn(), book2.isbn()))).hasSize(2);
