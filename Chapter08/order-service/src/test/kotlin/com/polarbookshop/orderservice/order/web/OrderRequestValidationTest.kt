@@ -15,7 +15,7 @@ class OrderRequestValidationTest {
     @BeforeAll
     fun setup() {
         val factory = Validation.buildDefaultValidatorFactory()
-        factory.use { validator =  it.validator }
+        factory.use { validator = it.validator }
     }
 
     @Test
@@ -30,17 +30,17 @@ class OrderRequestValidationTest {
         assertTrue(violations.isEmpty())
     }
 
-  @Test
-  fun `when ISBN not defined, then validation fails`() {
-    // Given
-    val expectedErrorMessage = "The book ISBN must be defined."
-    val orderRequest = OrderRequest("", 1)
+    @Test
+    fun `when ISBN not defined, then validation fails`() {
+        // Given
+        val expectedErrorMessage = "The book ISBN must be defined."
+        val orderRequest = OrderRequest("", 1)
 
-    // When
-    val validations = validator.validate(orderRequest)
+        // When
+        val validations = validator.validate(orderRequest)
 
-    // Then
-    assertEquals(1, validations.size)
-    assertEquals(expectedErrorMessage, validations.first().message)
-  }
+        // Then
+        assertEquals(1, validations.size)
+        assertEquals(expectedErrorMessage, validations.first().message)
+    }
 }
