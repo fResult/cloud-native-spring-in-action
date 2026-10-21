@@ -45,6 +45,20 @@ class OrderRequestValidationTest {
     }
 
     @Test
+    fun `when quantity is not defined, then validation fails`() {
+        // Given
+        val expectedErrorMessage = "The book quantity must be defined."
+        val request = OrderRequest("1234567890", null)
+
+        // When
+        val violations = validator.validate(request)
+
+        // Then
+        assertEquals(1, violations.size)
+        assertEquals(expectedErrorMessage, violations.first().message)
+    }
+
+    @Test
     fun `when quantity is lower than min, then validation fails`() {
         // Given
         val expectedErrorMessage = "You must order at least 1 item."
