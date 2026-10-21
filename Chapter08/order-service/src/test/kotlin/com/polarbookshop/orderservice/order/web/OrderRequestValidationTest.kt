@@ -33,11 +33,15 @@ class OrderRequestValidationTest {
         assertTrue(violations.isEmpty())
     }
 
-    @Test
-    fun `when ISBN not defined, then validation fails`() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("invalidIsbnCases")
+    fun `when ISBN not defined, then validation fails`(
+        @Suppress("UNUSED_PARAMETER") testCase: String,
+        invalidIsbn: String?,
+        expectedErrorMessage: String,
+    ) {
         // Given
-        val expectedErrorMessage = "The book ISBN must be defined."
-        val orderRequest = OrderRequest("", 1)
+        val orderRequest = OrderRequest(invalidIsbn, 1)
 
         // When
         val validations = validator.validate(orderRequest)
@@ -50,6 +54,7 @@ class OrderRequestValidationTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidQuantityCases")
     fun `when quantity is invalid, then validation fails`(
+        @Suppress("UNUSED_PARAMETER")
         testCase: String,
         invalidQuantity: Int?,
         expectedErrorMessage: String,
@@ -64,6 +69,12 @@ class OrderRequestValidationTest {
         assertEquals(1, violations.size)
         assertEquals(expectedErrorMessage, violations.single().message)
     }
+
+    private fun invalidIsbnCases(): List<Arguments> =
+        listOf(
+            Arguments.of("ISBN is blank", "", "The book ISBN must be defined."),
+            Arguments.of("ISBN is null", null, "The book ISBN must be defined."),
+        )
 
     private fun invalidQuantityCases(): List<Arguments> =
         listOf(
