@@ -43,4 +43,18 @@ class OrderRequestValidationTest {
         assertEquals(1, validations.size)
         assertEquals(expectedErrorMessage, validations.first().message)
     }
+
+    @Test
+    fun `when quantity is lower than min, then validation fails`() {
+        // Given
+        val expectedErrorMessage = "You must order at least 1 item."
+        val orderReuqest = OrderRequest("1234567890", 0)
+
+        // When
+        val violations = validator.validate(orderReuqest)
+
+        // Then
+        assertEquals(1, violations.size)
+        assertEquals(expectedErrorMessage, violations.first().message)
+    }
 }
