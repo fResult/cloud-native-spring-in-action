@@ -57,4 +57,18 @@ class OrderRequestValidationTest {
         assertEquals(1, violations.size)
         assertEquals(expectedErrorMessage, violations.first().message)
     }
+
+    @Test
+    fun `when quantity is higher than max, then validation fails`() {
+        // Given
+        val expectedErrorMessage = "You cannot order more than 5 items"
+        val orderReuqest = OrderRequest("1234567890", 7)
+
+        // When
+        val violations = validator.validate(orderReuqest)
+
+        // Then
+        assertEquals(1, violations.size)
+        assertEquals(expectedErrorMessage, violations.first().message)
+    }
 }
