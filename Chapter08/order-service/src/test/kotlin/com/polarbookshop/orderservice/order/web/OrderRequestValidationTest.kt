@@ -19,7 +19,7 @@ class OrderRequestValidationTest {
     }
 
     @Test
-    fun `when all fields correct then validation succeeds`() {
+    fun `when all fields correct, then validation succeeds`() {
         // Given
         val orderRequest = OrderRequest("1234567890", 1)
 
@@ -31,7 +31,7 @@ class OrderRequestValidationTest {
     }
 
   @Test
-  fun `when ISBN not defined then validation fails`() {
+  fun `when ISBN not defined, then validation fails`() {
     // Given
     val expectedErrorMessage = "The book ISBN must be defined."
     val orderRequest = OrderRequest("", 1)
