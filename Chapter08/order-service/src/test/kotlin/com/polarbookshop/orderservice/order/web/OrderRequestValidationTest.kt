@@ -29,4 +29,18 @@ class OrderRequestValidationTest {
         // Then
         assertTrue(violations.isEmpty())
     }
+
+  @Test
+  fun `when ISBN not defined then validation fails`() {
+    // Given
+    val expectedErrorMessage = "The book ISBN must be defined."
+    val orderRequest = OrderRequest("", 1)
+
+    // When
+    val validations = validator.validate(orderRequest)
+
+    // Then
+    assertEquals(1, validations.size)
+    assertEquals(expectedErrorMessage, validations.first().message)
+  }
 }
