@@ -22,5 +22,5 @@ class OrderController(
     @PostMapping
     fun submitOrder(
         @RequestBody @Valid orderRequest: @Valid OrderRequest,
-    ): Mono<Order> = orderService.submitOrder(orderRequest.isbn, orderRequest.quantity)
+    ): Mono<Order> = orderService.submitOrder(orderRequest.isbn!!, orderRequest.quantity!!)
 }

@@ -32,7 +32,7 @@ class OrderControllerWebFluxTest {
     fun `when book not available then reject order`() {
         // Given
         val orderRequest = OrderRequest("1234567890", 3)
-        val expectedOrder = buildRejectedOrder(isbn = orderRequest.isbn, quantity = orderRequest.quantity)
+        val expectedOrder = buildRejectedOrder(isbn = orderRequest.isbn!!, quantity = orderRequest.quantity!!)
         given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
 
         // When
