@@ -97,4 +97,33 @@ class OrderServiceTest {
             orderRepository.save(orderToSave)
         }
     }
+
+    @Test
+    fun `when submitting an order and catalog request times out, then saves rejected order`() {
+        // Given
+        val isbn = "1234567890"
+        val quantity = 3
+        val timoutException =
+            WebClientRequestException(
+                ReadTimeoutException.INSTANCE,
+                HttpMethod.GET,
+                URI.create("http://localhost:9001/books/$isbn"),
+                HttpHeaders(),
+            )
+        val orderToSave = Order.of(bookIsbn = isbn, quantity = quantity, status = OrderStatus.REJECTED)
+        val savedOrder = orderToSave.copy(id = 1)
+
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.error(timoutException)
+        given { orderRepository.save(orderToSave) } returns Mono.just(savedOrder)
+
+        // When
+        val result = orderService.submitOrder(isbn, quantity)
+
+        // Then
+        StepVerifier.create(result).expectNext(savedOrder).verifyComplete()
+        verify(exactly = 1) {
+            bookClient.getBookByIsbn(isbn)
+            orderRepository.save(orderToSave)
+        }
+    }
 }
