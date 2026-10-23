@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.math.BigDecimal
@@ -26,6 +27,23 @@ class OrderServiceTest {
 
     @InjectMockKs
     private lateinit var orderService: OrderService
+
+    @Test
+    fun `when getting all orders, then returns all orders from repository`() {
+        // Given
+        val order1 = Order.of("1234567891", "Book Name 1", BigDecimal.TEN, 2, OrderStatus.DISPATCHED)
+        val order2 = Order.of("1234567892", "Book Name 2", BigDecimal.TWO, 5, OrderStatus.ACCEPTED)
+        val expectedOrders = listOf(order1, order2)
+
+        given { orderRepository.findAll() } returns Flux.fromIterable(expectedOrders)
+
+        // When
+        val result = orderService.getAllOrders()
+
+        // Then
+        StepVerifier.create(result).expectNextSequence(expectedOrders).verifyComplete()
+        verify(exactly = 1) { orderRepository.findAll() }
+    }
 
     @Test
     fun `when submitting an order and the book is found, then saves an accepted`() {
