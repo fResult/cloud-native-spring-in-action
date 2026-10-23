@@ -28,25 +28,30 @@ class OrderServiceTest {
     private lateinit var orderService: OrderService
 
     @Test
-    fun `when submit order and book is found, then save accepted order`() {
+    fun `when submitting an order and the book is found, then saves an accepted`() {
         // Given
         val isbn = "1234567890"
         val quantity = 3
         val book = Book(isbn, "Title", "Author", BigDecimal.valueOf(9.90))
-        val order = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
-        val expectedOrder = order.copy(id = 1)
-        given { bookClient.getBookByIsbn("1234567890") } returns Mono.just(book)
-        given { orderRepository.save(any<Order>()) } returns Mono.just(expectedOrder)
+        val orderToSave = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
+        val savedOrder = orderToSave.copy(id = 1)
+
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.just(book)
+        given { orderRepository.save(orderToSave) } returns Mono.just(savedOrder)
 
         // When
-        val actual = orderService.submitOrder(isbn, quantity)
+        val result = orderService.submitOrder(isbn, quantity)
 
         // Then
-        StepVerifier.create(actual).expectNext(expectedOrder).verifyComplete()
+        StepVerifier.create(result).expectNext(savedOrder).verifyComplete()
+        verify(exactly = 1) {
+            bookClient.getBookByIsbn(isbn)
+            orderRepository.save(orderToSave)
+        }
     }
 
     @Test
-    fun `when submit order and book isn't found, then save rejected order`() {
+    fun `when submitting an order and the book isn't found, then saves rejected order`() {
         // Given
         val notFoundIsbn = "not-found-isbn"
         val quantity = 3
@@ -58,25 +63,20 @@ class OrderServiceTest {
                 ByteArray(0),
                 Charsets.UTF_8,
             )
-        val expectedOrderStatus = OrderStatus.REJECTED
-        val orderToCreate = Order.of(bookIsbn = notFoundIsbn, quantity = quantity, status = expectedOrderStatus)
-        val expectedOrder = orderToCreate.copy(id = 1)
+        val orderToSave = Order.of(bookIsbn = notFoundIsbn, quantity = quantity, status = OrderStatus.REJECTED)
+        val savedOrder = orderToSave.copy(id = 1)
 
         given { bookClient.getBookByIsbn(notFoundIsbn) } returns Mono.error(notFoundException)
-        given { orderRepository.save(orderToCreate) } returns Mono.just(expectedOrder)
+        given { orderRepository.save(orderToSave) } returns Mono.just(savedOrder)
 
         // When
-        val actualOrder = orderService.submitOrder(notFoundIsbn, 3)
+        val result = orderService.submitOrder(notFoundIsbn, quantity)
 
         // Then
-        StepVerifier
-            .create(actualOrder)
-            .expectNext(expectedOrder)
-            .verifyComplete()
-
+        StepVerifier.create(result).expectNext(savedOrder).verifyComplete()
         verify(exactly = 1) {
             bookClient.getBookByIsbn(notFoundIsbn)
-            orderRepository.save(orderToCreate)
+            orderRepository.save(orderToSave)
         }
     }
 }
