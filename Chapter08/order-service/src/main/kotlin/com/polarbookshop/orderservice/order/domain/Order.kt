@@ -1,5 +1,6 @@
 package com.polarbookshop.orderservice.order.domain
 
+import com.polarbookshop.orderservice.book.Book
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -28,5 +29,15 @@ data class Order(
             quantity: Int,
             status: OrderStatus,
         ): Order = Order(bookIsbn = bookIsbn, bookName = bookName, bookPrice = bookPrice, quantity = quantity, status = status, version = 0)
+
+        fun buildAcceptedOrder(
+            book: Book,
+            quantity: Int,
+        ) = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
+
+        fun buildRejectedOrder(
+            isbn: String,
+            quantity: Int,
+        ) = Order.of(isbn, quantity = quantity, status = OrderStatus.REJECTED)
     }
 }

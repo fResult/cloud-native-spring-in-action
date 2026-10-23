@@ -1,6 +1,5 @@
 package com.polarbookshop.orderservice.order.domain
 
-import com.polarbookshop.orderservice.book.Book
 import com.polarbookshop.orderservice.config.BookClient
 import io.netty.handler.timeout.ReadTimeoutException
 import org.springframework.stereotype.Service
@@ -23,20 +22,15 @@ class OrderService(
     ): Mono<Order> =
         bookClient
             .getBookByIsbn(isbn)
-            .map { book -> buildAcceptedOrder(book, quantity) }
+            .map { book -> Order.buildAcceptedOrder(book, quantity) }
             .onErrorResume(WebClientResponseException.NotFound::class, rejectWhenBookIsNotFoundFor(isbn, quantity))
             .onErrorResume(WebClientRequestException::class, rejectWhenCatalogReadTimeoutFor(isbn, quantity))
             .flatMap(orderRepository::save)
 
-    private fun buildAcceptedOrder(
-        book: Book,
-        quantity: Int,
-    ): Order = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
-
     private fun rejectWhenBookIsNotFoundFor(
         isbn: String,
         quantity: Int,
-    ): (WebClientResponseException.NotFound) -> Mono<Order> = { _ -> Mono.just(buildRejectedOrder(isbn, quantity)) }
+    ): (WebClientResponseException.NotFound) -> Mono<Order> = { _ -> Mono.just(Order.buildRejectedOrder(isbn, quantity)) }
 
     private fun rejectWhenCatalogReadTimeoutFor(
         isbn: String,
@@ -44,13 +38,8 @@ class OrderService(
     ): (WebClientRequestException) -> Mono<Order> =
         { ex ->
             when (ex.cause) {
-                is ReadTimeoutException -> Mono.just(buildRejectedOrder(isbn, quantity))
+                is ReadTimeoutException -> Mono.just(Order.buildRejectedOrder(isbn, quantity))
                 else -> Mono.error(ex)
             }
         }
-
-    private fun buildRejectedOrder(
-        isbn: String,
-        quantity: Int,
-    ): Order = Order.of(bookIsbn = isbn, quantity = quantity, status = OrderStatus.REJECTED)
 }
