@@ -24,9 +24,9 @@ class OrderServiceTest {
     private lateinit var orderService: OrderService
 
     @Test
-    fun `when submit order, and book is found, then success`() {
+    fun `when submit order and book is found, then save accepted order`() {
         // Given
-        val isbn =  "1234567890"
+        val isbn = "1234567890"
         val quantity = 3
         val book = Book(isbn, "Title", "Author", BigDecimal.valueOf(9.90))
         val order = Order.of(book.isbn, "${book.title} - ${book.author}", book.price, quantity, OrderStatus.ACCEPTED)
