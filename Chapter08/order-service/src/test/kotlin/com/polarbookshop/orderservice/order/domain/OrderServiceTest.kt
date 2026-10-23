@@ -7,14 +7,19 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import io.netty.handler.timeout.ReadTimeoutException
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.math.BigDecimal
+import java.net.ConnectException
+import java.net.URI
 import kotlin.test.Test
 
 @ExtendWith(MockKExtension::class)
@@ -125,5 +130,34 @@ class OrderServiceTest {
             bookClient.getBookByIsbn(isbn)
             orderRepository.save(orderToSave)
         }
+    }
+
+    @Test
+    fun `when submitting an order and catalog request fails for non-timeout reason, then propagates the error`() {
+        // Given
+        val isbn = "1234567890"
+        val quantity = 3
+        val connectionException = ConnectException("Catalog service is unavailable")
+        val requestException =
+            WebClientRequestException(
+                connectionException,
+                HttpMethod.GET,
+                URI.create("http://localhost:9001/books/$isbn"),
+                HttpHeaders(),
+            )
+
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.error(requestException)
+
+        // When
+        val result = orderService.submitOrder(isbn, quantity)
+
+        // Then
+        StepVerifier
+            .create(result)
+            .expectErrorMatches { ex -> ex is WebClientRequestException && ex.cause is ConnectException }
+            .verify()
+
+        verify(exactly = 1) { bookClient.getBookByIsbn(isbn) }
+        verify(exactly = 0) { orderRepository.save(any<Order>()) }
     }
 }
