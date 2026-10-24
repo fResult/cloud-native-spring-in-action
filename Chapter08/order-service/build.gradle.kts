@@ -63,6 +63,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.springframework:spring-jdbc")
     implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("io.projectreactor:reactor-tools")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
