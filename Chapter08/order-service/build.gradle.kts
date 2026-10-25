@@ -32,6 +32,7 @@ extra["jackson-bom.version"] = "3.2.3"
 // === Explicit dependency versions ===
 extra["mockkVersion"] = "1.14.11"
 extra["springMockKVersion"] = "5.0.1"
+extra["blockHoundVersion"] = "1.0.17.RELEASE"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
@@ -82,6 +83,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-r2dbc")
     testImplementation("com.squareup.okhttp3:mockwebserver3-junit5")
+    testImplementation("io.projectreactor.tools:blockhound:${property("blockHoundVersion")}")
     testImplementation("io.mockk:mockk-jvm:${property("mockkVersion")}")
     testImplementation("io.mockk:mockk-bdd:${property("mockkVersion")}")
     testImplementation("com.ninja-squad:springmockk:${property("springMockKVersion")}")
@@ -128,10 +130,15 @@ kotlin {
     }
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     // Tests use local application properties and provision PostgreSQL only.
     // Disable the Config Client because this test suite does not provision a Config Server.
     systemProperty("spring.cloud.config.enabled", "false")
+
+    // BlockHound configuration for Java 13+
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
+        jvmArgs("-XX:+AllowRedefinitionToAddDeleteMethods")
+    }
 }
