@@ -1,7 +1,7 @@
 package com.polarbookshop.orderservice.order.domain
 
 import com.polarbookshop.orderservice.book.Book
-import com.polarbookshop.orderservice.config.BookClient
+import com.polarbookshop.orderservice.book.web.CatalogBookClient
 import io.mockk.bdd.given
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -11,9 +11,7 @@ import io.netty.handler.timeout.ReadTimeoutException
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientRequestException
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -25,7 +23,7 @@ import kotlin.test.Test
 @ExtendWith(MockKExtension::class)
 class OrderServiceTest {
     @MockK
-    private lateinit var bookClient: BookClient
+    private lateinit var bookClient: CatalogBookClient
 
     @MockK
     private lateinit var orderRepository: OrderRepository
@@ -78,18 +76,10 @@ class OrderServiceTest {
         // Given
         val notFoundIsbn = "not-found-isbn"
         val quantity = 3
-        val notFoundException =
-            WebClientResponseException.NotFound.create(
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.reasonPhrase,
-                HttpHeaders(),
-                ByteArray(0),
-                Charsets.UTF_8,
-            )
         val orderToSave = Order.of(bookIsbn = notFoundIsbn, quantity = quantity, status = OrderStatus.REJECTED)
         val savedOrder = orderToSave.copy(id = 1)
 
-        given { bookClient.getBookByIsbn(notFoundIsbn) } returns Mono.error(notFoundException)
+        given { bookClient.getBookByIsbn(notFoundIsbn) } returns Mono.empty()
         given { orderRepository.save(orderToSave) } returns Mono.just(savedOrder)
 
         // When
@@ -118,7 +108,7 @@ class OrderServiceTest {
         val orderToSave = Order.of(bookIsbn = isbn, quantity = quantity, status = OrderStatus.REJECTED)
         val savedOrder = orderToSave.copy(id = 1)
 
-        given { bookClient.getBookByIsbn(isbn) } returns Mono.error(timoutException)
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.empty()
         given { orderRepository.save(orderToSave) } returns Mono.just(savedOrder)
 
         // When
@@ -156,7 +146,6 @@ class OrderServiceTest {
             .create(result)
             .expectErrorMatches { ex -> ex is WebClientRequestException && ex.cause is ConnectException }
             .verify()
-
         verify(exactly = 1) { bookClient.getBookByIsbn(isbn) }
         verify(exactly = 0) { orderRepository.save(any<Order>()) }
     }

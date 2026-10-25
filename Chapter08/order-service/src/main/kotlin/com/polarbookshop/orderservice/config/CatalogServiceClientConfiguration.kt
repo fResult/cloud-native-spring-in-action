@@ -27,11 +27,11 @@ import kotlin.time.toJavaDuration
 @Configuration
 class CatalogServiceClientConfiguration {
     @Bean
-    fun bookClient(catalogServiceWebClient: WebClient): BookClient {
+    internal fun bookHttpApi(catalogServiceWebClient: WebClient): BookHttpApi {
         val adapter = WebClientAdapter.create(catalogServiceWebClient)
         val proxyFactory = HttpServiceProxyFactory.builderFor(adapter).build()
 
-        return proxyFactory.createClient(BookClient::class.java)
+        return proxyFactory.createClient(BookHttpApi::class.java)
     }
 
     @Bean

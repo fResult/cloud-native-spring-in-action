@@ -1,6 +1,7 @@
-package com.polarbookshop.orderservice.book
+package com.polarbookshop.orderservice.book.web
 
-import com.polarbookshop.orderservice.config.BookClient
+import com.polarbookshop.orderservice.book.Book
+import com.polarbookshop.orderservice.config.BookHttpApi
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -10,28 +11,30 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import reactor.test.StepVerifier
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class BookClientTest {
+class CatalogBookClientTest {
     @field:StartStop
     private val mockWebServer: MockWebServer = MockWebServer()
 
     val mapper = ObjectMapper()
     val responseWith = mockWebServer.responseWith(mapper)
 
-    private val bookClient by lazy {
+    private val bookHttpApi by lazy {
         val webClient = WebClient.create(mockWebServer.url("/").toString())
         val adapter = WebClientAdapter.create(webClient)
 
-        return@lazy HttpServiceProxyFactory.builderFor(adapter).build().createClient(BookClient::class.java)
+        return@lazy HttpServiceProxyFactory.builderFor(adapter).build().createClient(BookHttpApi::class.java)
     }
+
+    private val bookClient by lazy { CatalogBookClient(bookHttpApi) }
 
     @Test
     fun `when books exist then return books`() {
@@ -43,7 +46,7 @@ class BookClientTest {
         responseWith(expectedBooks)
 
         // WHen
-        val actualBooks = bookClient.fetchBooks()
+        val actualBooks = bookClient.getBooks()
 
         // Then
         StepVerifier
@@ -63,14 +66,14 @@ class BookClientTest {
         responseWith(response = emptyList<Book>())
 
         // When
-        val notFoundBook = bookClient.fetchBooks()
+        val notFoundBook = bookClient.getBooks()
 
         // Then
         StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
     }
 
     @Test
-    fun `when book exists then return book`() {
+    fun `when book exists, then return book`() {
         // Given
         val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
         responseWith(expectedBook, HttpStatus.OK)
@@ -87,7 +90,7 @@ class BookClientTest {
     }
 
     @Test
-    fun `when book doesn't exists then book not found`() {
+    fun `when book doesn't exists, then returns no book`() {
         // Given
         val isbn = "not-found-isbn"
         val mockResponse = MockResponse(HttpStatus.NOT_FOUND.value())
@@ -97,7 +100,32 @@ class BookClientTest {
         val notFoundBook = bookClient.getBookByIsbn(isbn)
 
         // Then
-        StepVerifier.create(notFoundBook).expectError(WebClientResponseException::class.java).verify()
+        StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
+    }
+
+    @Test
+    fun `when book request times out, then returns no book`() {
+        // Given
+        val isbn = "1234567890"
+        val mockResposne =
+            MockResponse
+                .Builder()
+                .body("""{"title": "Title"}""")
+                .headers(headersOf("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .headersDelay(5, TimeUnit.SECONDS)
+                .bodyDelay(5, TimeUnit.SECONDS)
+                .build()
+        mockWebServer.enqueue(mockResposne)
+
+        // When
+        val bookCallback = { bookClient.getBookByIsbn(isbn) }
+
+        // Then
+        StepVerifier
+            .create(bookCallback.invoke())
+            .expectSubscription()
+            .expectNextCount(0)
+            .verifyComplete()
     }
 }
 

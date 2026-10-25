@@ -29,7 +29,7 @@ class OrderControllerWebFluxTest {
     }
 
     @Test
-    fun `when book not available then reject order`() {
+    fun `when book not available, then reject order`() {
         // Given
         val orderRequest = OrderRequest("1234567890", 3)
         val expectedOrder = buildRejectedOrder(isbn = orderRequest.isbn!!, quantity = orderRequest.quantity!!)
