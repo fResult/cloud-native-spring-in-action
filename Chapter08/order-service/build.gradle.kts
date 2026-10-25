@@ -58,14 +58,16 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.springframework.retry:spring-retry")
+    implementation("io.projectreactor:reactor-tools")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.springframework:spring-jdbc")
     implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("io.projectreactor:reactor-tools")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -87,6 +89,7 @@ dependencies {
     testImplementation("io.mockk:mockk-jvm:${property("mockkVersion")}")
     testImplementation("io.mockk:mockk-bdd:${property("mockkVersion")}")
     testImplementation("com.ninja-squad:springmockk:${property("springMockKVersion")}")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
