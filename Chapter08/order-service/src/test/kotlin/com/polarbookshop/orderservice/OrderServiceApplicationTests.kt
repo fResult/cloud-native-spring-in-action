@@ -21,6 +21,7 @@ import org.springframework.test.web.reactive.server.expectBodyList
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.fail
 
 @AutoConfigureWebTestClient
@@ -84,5 +85,38 @@ class OrderServiceApplicationTests {
         assertThat(actualOrders).anyMatch { order ->
             createdOrder.id == order.id && createdOrder.bookIsbn == order.bookIsbn
         }
+    }
+
+    @Test
+    fun `when customer orders book that does not exist, then order is rejected`() {
+        // Given
+        val nonExistingBookIsbn = "not-found-isbn"
+        val orderRequest = OrderRequest(nonExistingBookIsbn, 1)
+
+        val expectedOrderStatus = OrderStatus.REJECTED
+
+        given { bookClient.getBookByIsbn(nonExistingBookIsbn) } returns Mono.empty()
+
+        // When
+        val createdOrderResponse =
+            webTestClient
+                .post()
+                .uri("/orders")
+                .bodyValue(orderRequest)
+                .exchange()
+
+        // Then
+        val createdOrder =
+            createdOrderResponse
+                .expectStatus()
+                .isCreated()
+                .expectBody<Order>()
+                .returnResult()
+                .responseBody
+                ?: fail("Expected the created order to be returned")
+        assertEquals(nonExistingBookIsbn, createdOrder.bookIsbn)
+        assertEquals(expectedOrderStatus, createdOrder.status)
+        assertNull(createdOrder.bookName)
+        assertNull(createdOrder.bookPrice)
     }
 }
