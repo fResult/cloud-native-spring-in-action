@@ -36,18 +36,16 @@ class OrderServiceApplicationTests {
     private lateinit var bookClient: CatalogBookClient
 
     @Test
-    fun `when customer orders available book, then order is accepted and appears in order list`() {
+    fun `when get orders, then returns orders`() {
         // Given
         val isbn = "1234567893"
-        val availableBook = Book(isbn, "Title", "Author", BigDecimal.valueOf(9.90))
-        val expectedOrderStatus = OrderStatus.ACCEPTED
-        val expectedOrderBookName = "${availableBook.title} - ${availableBook.author}"
         val orderRequest = OrderRequest(isbn, 1)
+        val book = Book(isbn, "Title", "Author", BigDecimal.valueOf(9.90))
 
-        given { bookClient.getBookByIsbn(isbn) } returns Mono.just(availableBook)
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.just(book)
 
-        // When: customer orders the book
-        val createdOrder =
+        // When
+        val expectedOrder =
             webTestClient
                 .post()
                 .uri("/orders")
@@ -60,31 +58,51 @@ class OrderServiceApplicationTests {
                 .responseBody
                 ?: fail("Expected the created order to be returned")
 
-        // When: customer retrieves the order list
-        val getOrderResponse =
-            webTestClient
-                .get()
-                .uri("/orders")
-                .exchange()
+        val orderResponse = webTestClient.get().uri("/orders").exchange()
 
         // Then
-        val actualOrders =
-            getOrderResponse
+        val orders =
+            orderResponse
                 .expectStatus()
                 .isOk()
                 .expectBodyList<Order>()
                 .returnResult()
                 .responseBody
                 .orEmpty()
+        assertThat(orders).anyMatch { order -> expectedOrder.bookIsbn == order.bookIsbn }
+    }
 
+    @Test
+    fun `when customer orders available book, then order is accepted`() {
+        // Given
+        val isbn = "1234567893"
+        val availableBook = Book(isbn, "Title", "Author", BigDecimal.valueOf(9.90))
+        val expectedOrderStatus = OrderStatus.ACCEPTED
+        val expectedOrderBookName = "${availableBook.title} - ${availableBook.author}"
+        val orderRequest = OrderRequest(isbn, 1)
+
+        given { bookClient.getBookByIsbn(isbn) } returns Mono.just(availableBook)
+
+        // When
+        val createdOrderResponse =
+            webTestClient
+                .post()
+                .uri("/orders")
+                .bodyValue(orderRequest)
+                .exchange()
+
+        val createdOrder =
+            createdOrderResponse
+                .expectStatus()
+                .isCreated()
+                .expectBody<Order>()
+                .returnResult()
+                .responseBody
+                ?: fail("Expected the created order to be returned")
         assertEquals(createdOrder.bookIsbn, isbn)
         assertEquals(expectedOrderBookName, createdOrder.bookName)
         assertEquals(orderRequest.quantity, createdOrder.quantity)
         assertEquals(expectedOrderStatus, createdOrder.status)
-
-        assertThat(actualOrders).anyMatch { order ->
-            createdOrder.id == order.id && createdOrder.bookIsbn == order.bookIsbn
-        }
     }
 
     @Test
