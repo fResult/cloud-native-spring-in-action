@@ -1,3 +1,6 @@
+import org.springframework.boot.buildpack.platform.build.PullPolicy
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
 plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
@@ -124,6 +127,33 @@ spotless {
         target("src/**/*.yaml", "src/**/*.yml")
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+tasks.withType<BootBuildImage> {
+    imageName = "${project.name}:${project.version}"
+    val tiltDev = providers.gradleProperty("tiltDev").isPresent
+    // The multi-architecture Jammy buildpack currently ships JRE 25 and 27, not 26.
+    val jvmVersion = if (tiltDev) "27" else "${java.toolchain.languageVersion.get()}"
+    if (tiltDev) {
+        builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
+        buildpacks = listOf("docker://paketobuildpacks/java:latest")
+        runImage = "catalog-service-tilt-run:local"
+        // Keep the locally built dev run image but pull missing builder/buildpack images.
+        pullPolicy = PullPolicy.IF_NOT_PRESENT
+    }
+    environment =
+        mapOf(
+            "BP_JVM_VERSION" to jvmVersion,
+            "BP_LIVE_RELOAD_ENABLED" to if (tiltDev) "true" else "false",
+        )
+
+    docker {
+        publishRegistry {
+            username = providers.gradleProperty("registryUsername")
+            password = providers.gradleProperty("registryToken")
+            url = providers.gradleProperty("registryUrl")
+        }
     }
 }
 
