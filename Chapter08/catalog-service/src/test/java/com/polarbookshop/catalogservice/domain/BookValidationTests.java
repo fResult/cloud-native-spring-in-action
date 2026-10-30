@@ -1,20 +1,25 @@
 package com.polarbookshop.catalogservice.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vavr.collection.HashSet;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.math.BigDecimal;
 import lombok.val;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BookValidationTests {
-  private static Validator validator;
+  @Nullable
+  private Validator validator;
 
   @BeforeAll
-  static void setUp() {
+  void setUp() {
     try (val validatorFactory = Validation.buildDefaultValidatorFactory()) {
       validator = validatorFactory.getValidator();
     }
