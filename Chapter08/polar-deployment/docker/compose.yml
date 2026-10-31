@@ -24,6 +24,23 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
       - SPRING_PROFILES_ACTIVE=testdata
 
+  order-service:
+    depends_on:
+      - polar-postgres
+    image: order-service
+    container_name: order-service
+    ports:
+      - "9002:9002"
+      - "8002:8002"
+    environment:
+      # Buildpacks environments variable to enable debug through a socket on port 8002
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=8002
+      - POLAR_CATALOG_SERVICE_URI=http://catalog-service:9001
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_R2DBC_URL=r2dbc:postgresql://polar-postgres:5432/polardb_order
+      - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_orderr
+
   config-service:
     image: config-service
     container_name: config-service
