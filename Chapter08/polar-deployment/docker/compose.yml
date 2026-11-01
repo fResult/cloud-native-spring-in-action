@@ -8,7 +8,6 @@ services:
         condition: service_started
       config-service:
         condition: service_started
-
     image: catalog-service
     container_name: catalog-service
     ports:
