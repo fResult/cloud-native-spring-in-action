@@ -36,10 +36,13 @@ extra["jackson-bom.version"] = "3.2.3"
 extra["mockkVersion"] = "1.14.11"
 extra["springMockKVersion"] = "5.0.1"
 extra["blockHoundVersion"] = "1.0.17.RELEASE"
+extra["jnaVersion"] = "5.19.1"
 
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2025.1.3"
 extra["okhttp.version"] = "5.5.0"
+
+val tiltDev = providers.gradleProperty("tiltDev").isPresent
 
 dependencies {
     constraints {
@@ -68,6 +71,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.springframework:spring-jdbc")
     implementation("tools.jackson.module:jackson-module-kotlin")
+    if (tiltDev) {
+        implementation("net.java.dev.jna:jna:${property("jnaVersion")}")
+    }
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -132,7 +138,6 @@ spotless {
 
 tasks.withType<BootBuildImage> {
     imageName = "${project.name}:${project.version}"
-    val tiltDev = providers.gradleProperty("tiltDev").isPresent
     // The multi-architecture Jammy buildpack currently ships JRE 25 and 27, not 26.
     val jvmVersion = if (tiltDev) "27" else "${java.toolchain.languageVersion.get()}"
     if (tiltDev) {
