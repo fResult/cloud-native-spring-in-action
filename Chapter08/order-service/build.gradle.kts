@@ -143,7 +143,7 @@ tasks.withType<BootBuildImage> {
     if (tiltDev) {
         builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
         buildpacks = listOf("docker://paketobuildpacks/java:latest")
-        runImage = "catalog-service-tilt-run:local"
+        runImage = "order-service-tilt-run:local"
         // Keep the locally built dev run image but pull missing builder/buildpack images.
         pullPolicy = PullPolicy.IF_NOT_PRESENT
     }
