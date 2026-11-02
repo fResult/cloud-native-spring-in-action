@@ -14,7 +14,7 @@ image_build_deps = [
   'scripts/build-and-load-tilt-image.sh',
 ]
 # The IDE or Gradle compiles source changes into these paths before Tilt syncs them.
-compiled_classes =   'build/classes/java/main'
+compiled_classes =   'build/classes/kotlin/main'
 compiled_resources = 'build/resources/main'
 live_update_deps = [compiled_classes, compiled_resources]
 
