@@ -43,7 +43,7 @@ class CatalogServiceClientConfiguration {
         webClientBuilder: WebClient.Builder,
     ): WebClient =
         webClientBuilder
-            .baseUrl(catalogServiceProperties.url.toString())
+            .baseUrl(catalogServiceProperties.uri.toString())
             .clientConnector(ReactorClientHttpConnector(catalogServiceHttpClient))
             .filter(catalogTimeoutFilter.andThen(catalogServiceRetryFilter))
             .build()

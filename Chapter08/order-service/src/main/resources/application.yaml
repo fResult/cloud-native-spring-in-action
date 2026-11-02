@@ -43,4 +43,4 @@ management:
 
 polar:
   catalog-service:
-    url: http://localhost:9001
+    uri: http://localhost:9001
