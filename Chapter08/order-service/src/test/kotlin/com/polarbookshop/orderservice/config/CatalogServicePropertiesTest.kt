@@ -2,12 +2,14 @@ package com.polarbookshop.orderservice.config
 
 import org.junit.jupiter.api.Nested
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.context.properties.bind.validation.BindValidationException
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
@@ -24,7 +26,6 @@ class CatalogServicePropertiesTest {
             // Given
             val uri = "http://catalog-service"
             val timeout = 3.seconds
-
 
             // When & Then
             catalogPropertiesContext
@@ -78,5 +79,16 @@ class CatalogServicePropertiesTest {
                     assertEquals(URI.create(validUri), properties.uri)
                 }
         }
+
+        @Test
+        fun `when uri is missing, then fail validation`() {
+            catalogPropertiesContext.run { context -> assertCausedBy<BindValidationException>(context.startupFailure) }
+        }
     }
+
+    private inline fun <reified T : Throwable> assertCausedBy(failure: Throwable?) =
+        assertTrue(
+            generateSequence(failure, Throwable::cause).any { it is T },
+            "Expected cause ${T::class.simpleName}, got: $failure",
+        )
 }
