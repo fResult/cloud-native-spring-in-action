@@ -2,6 +2,7 @@ package com.polarbookshop.orderservice.book.web
 
 import com.polarbookshop.orderservice.book.Book
 import com.polarbookshop.orderservice.config.BookHttpApi
+import com.polarbookshop.orderservice.config.CatalogServiceProperties
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -16,6 +17,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import reactor.test.StepVerifier
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,7 +36,12 @@ class CatalogBookClientTest {
         return@lazy HttpServiceProxyFactory.builderFor(adapter).build().createClient(BookHttpApi::class.java)
     }
 
-    private val bookClient by lazy { CatalogBookClient(bookHttpApi) }
+    private val bookClient by lazy {
+        val properties = CatalogServiceProperties()
+        properties.uri = URI.create("http://localhost:${mockWebServer.port}")
+
+        return@lazy CatalogBookClient(bookHttpApi, properties)
+    }
 
     @Test
     fun `when books exist then return books`() {

@@ -13,6 +13,6 @@ import kotlin.time.toJavaDuration
 class CatalogServiceProperties {
     @field:NotNull
     lateinit var uri: URI
-    var connectTimeout: Duration = 15.seconds.toJavaDuration()
-    var responseTimeout: Duration = 30.seconds.toJavaDuration()
+    var connectTimeout: Duration = 3.seconds.toJavaDuration()
+    var responseTimeout: Duration = 5.seconds.toJavaDuration()
 }
