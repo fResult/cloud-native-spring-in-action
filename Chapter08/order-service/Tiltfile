@@ -1,5 +1,6 @@
 app_name = 'order-service'
 minikube_profile = 'polar'
+# Must match the runImage configured for -PtiltDev in build.gradle.kts.
 dev_run_image = 'order-service-tilt-run:local'
 image_ref_file = '.tilt/order-service-image-ref'
 container_classes = '/workspace/BOOT-INF/classes'

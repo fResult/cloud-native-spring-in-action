@@ -331,7 +331,7 @@ minikube stop --profile polar
 > minikube image ls --profile polar | grep -E '^(catalog|config)-service:tilt-'
 >
 > docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(catalog|config)-service:tilt-')
-> minikube image rm $(minikube image ls --profile polar | grep -E '^(catalog|config)-service:tilt-') --profile polar
+> minikube image rm $(minikube image ls --profile polar | grep -E '(catalog|config)-service:tilt-') --profile polar
 > ```
 >
 > The safer alternative is to delete one reviewed image at a time: `docker rmi <image_name|image_id>` or `minikube image rm <image_name|image_id> --profile polar`.

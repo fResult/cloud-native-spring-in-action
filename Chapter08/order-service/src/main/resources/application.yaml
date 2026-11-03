@@ -39,7 +39,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh,health,env
+        include: refresh,health,env # DON'T expose `env` on production,
 
 polar:
   catalog-service:
