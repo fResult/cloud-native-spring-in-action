@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorResume
 import reactor.util.retry.Retry
+import java.net.ConnectException
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
@@ -25,10 +26,10 @@ class CatalogBookClient internal constructor(
             .getBookByIsbn(isbn)
             .timeout(properties.responseTimeout, Mono.empty())
             .onErrorResume(WebClientResponseException.NotFound::class) { _ -> Mono.empty() }
-            .retryWhen(Retry.backoff(3, 100.milliseconds.toJavaDuration()).filter(::isRetryable))
+            .retryWhen(Retry.backoff(3, 100.milliseconds.toJavaDuration()).filter(::isTransientFailure))
             .onErrorResume(Exception::class) { _ -> Mono.empty() }
 
-    fun isRetryable(ex: Throwable) =
-        ex !is WebClientResponseException.NotFound &&
-            ex !is TimeoutException
+    fun isTransientFailure(ex: Throwable) =
+        ex is TimeoutException || ex is ConnectException ||
+            (ex is WebClientResponseException.NotFound && ex.statusCode.is5xxServerError)
 }
