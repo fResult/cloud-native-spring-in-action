@@ -23,22 +23,22 @@ class CatalogServicePropertiesTest {
         fun `when correct URI and timeouts are provided, then application context loads properly`() {
             // Given
             val uri = "http://catalog-service"
-            val connectTimeout = "3s"
-            val responseTimeout = "3s"
+            val timeout = 3.seconds
+
 
             // When & Then
             catalogPropertiesContext
                 .withPropertyValues(
                     "polar.catalog-service.uri=$uri",
-                    "polar.catalog-service.connect-timeout=$connectTimeout",
-                    "polar.catalog-service.response-timeout=$responseTimeout",
+                    "polar.catalog-service.connect-timeout=$timeout",
+                    "polar.catalog-service.response-timeout=$timeout",
                 ).run { context ->
                     val properties = context.getBean(CatalogServiceProperties::class.java)
 
                     // Then
                     assertEquals(URI.create(uri), properties.uri)
-                    assertEquals(3.seconds.toJavaDuration(), properties.connectTimeout)
-                    assertEquals(3.seconds.toJavaDuration(), properties.responseTimeout)
+                    assertEquals(timeout.toJavaDuration(), properties.connectTimeout)
+                    assertEquals(timeout.toJavaDuration(), properties.responseTimeout)
                 }
         }
     }
