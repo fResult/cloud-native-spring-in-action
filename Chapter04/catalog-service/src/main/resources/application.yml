@@ -28,7 +28,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh,health,env # DON'T expose `env` on production,
+        include: refresh,health,env # DON'T expose `env` on production
 
 polar:
   greeting: Welcome to the local book catalog!
