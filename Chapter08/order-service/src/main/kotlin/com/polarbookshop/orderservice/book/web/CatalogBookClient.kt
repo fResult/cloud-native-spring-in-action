@@ -11,8 +11,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorResume
 import reactor.util.retry.Retry
-import java.net.ConnectException
-import java.util.concurrent.TimeoutException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
@@ -34,6 +32,9 @@ class CatalogBookClient internal constructor(
             .onErrorResume(Exception::class) { _ -> Mono.empty() }
 
     fun isTransientFailure(ex: Throwable) =
-        ex is TimeoutException || ex is ConnectException ||
-            (ex is WebClientResponseException.NotFound && ex.statusCode.is5xxServerError)
+        when (ex) {
+            is WebClientRequestException -> ex.cause is ReadTimeoutException
+            is WebClientResponseException -> ex.statusCode.is5xxServerError
+            else -> false
+        }
 }
