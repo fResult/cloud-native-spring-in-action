@@ -3,7 +3,9 @@ package com.polarbookshop.orderservice.book.web
 import com.polarbookshop.orderservice.book.Book
 import com.polarbookshop.orderservice.config.BookHttpApi
 import com.polarbookshop.orderservice.config.CatalogServiceProperties
+import io.netty.handler.timeout.ReadTimeoutException
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -19,6 +21,8 @@ class CatalogBookClient internal constructor(
     private val httpApi: BookHttpApi,
     private val properties: CatalogServiceProperties,
 ) {
+    private val transientRetry = Retry.backoff(3, 100.milliseconds.toJavaDuration()).filter(::isTransientFailure)
+
     fun getBooks(): Flux<Book> = httpApi.getBooks()
 
     fun getBookByIsbn(isbn: String): Mono<Book> =
@@ -26,7 +30,7 @@ class CatalogBookClient internal constructor(
             .getBookByIsbn(isbn)
             .timeout(properties.responseTimeout, Mono.empty())
             .onErrorResume(WebClientResponseException.NotFound::class) { _ -> Mono.empty() }
-            .retryWhen(Retry.backoff(3, 100.milliseconds.toJavaDuration()).filter(::isTransientFailure))
+            .retryWhen(transientRetry)
             .onErrorResume(Exception::class) { _ -> Mono.empty() }
 
     fun isTransientFailure(ex: Throwable) =
