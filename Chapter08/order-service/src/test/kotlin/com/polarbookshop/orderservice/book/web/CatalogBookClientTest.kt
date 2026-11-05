@@ -99,12 +99,12 @@ class CatalogBookClientTest {
     @Test
     fun `when book doesn't exists, then returns no book`() {
         // Given
-        val isbn = "not-found-isbn"
+        val nonExistingBookIsbn = "not-found-isbn"
         val mockResponse = MockResponse(HttpStatus.NOT_FOUND.value())
         mockWebServer.enqueue(mockResponse)
 
         // When
-        val notFoundBook = bookClient.getBookByIsbn(isbn)
+        val notFoundBook = bookClient.getBookByIsbn(nonExistingBookIsbn)
 
         // Then
         StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
@@ -133,6 +133,19 @@ class CatalogBookClientTest {
             .expectSubscription()
             .expectNextCount(0)
             .verifyComplete()
+    }
+
+    @Test
+    fun `when book doesn't exist, then do not retry`() {
+        // Given
+        mockWebServer.enqueue(MockResponse(HttpStatus.NOT_FOUND.value()))
+
+        // When
+        val result = bookClient.getBookByIsbn("not-found-isbn")
+
+        // Then
+        StepVerifier.create(result).verifyComplete()
+        assertEquals(1, mockWebServer.requestCount)
     }
 }
 
