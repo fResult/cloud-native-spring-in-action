@@ -136,6 +136,22 @@ class CatalogBookClientTest {
     }
 
     @Test
+    fun `when catalog returns 503 once, then retry and return book`() {
+        // Given
+        val book = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
+
+        mockWebServer.enqueue(MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value()))
+        responseWith(book)
+
+        // When
+        val result = bookClient.getBookByIsbn(book.isbn)
+
+        // Then
+        StepVerifier.create(result).expectNext(book).verifyComplete()
+        assertEquals(2, mockWebServer.requestCount)
+    }
+
+    @Test
     fun `when book doesn't exist, then do not retry`() {
         // Given
         mockWebServer.enqueue(MockResponse(HttpStatus.NOT_FOUND.value()))
