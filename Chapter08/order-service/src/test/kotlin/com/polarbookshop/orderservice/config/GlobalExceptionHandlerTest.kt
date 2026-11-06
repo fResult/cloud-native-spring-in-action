@@ -2,6 +2,9 @@ package com.polarbookshop.orderservice.config
 
 import io.mockk.bdd.given
 import io.mockk.mockk
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.ConstraintViolationException
+import jakarta.validation.Path
 import org.junit.jupiter.api.Nested
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -58,6 +61,24 @@ class GlobalExceptionHandlerTest {
             assertEquals(listOf(quantityField to expectedErrorMessage), response.reportedFieldErrors())
         }
     }
+
+    @Nested
+    inner class GivenCustomerSendsInvalidParameter {
+        @Test
+        fun `when violation has no location and no reason, then reports unknown with Invalid value`() {
+            // Given
+            val anonymousViolation =
+                ConstraintViolationException(
+                    setOf(violationAt(reason = null)),
+                )
+
+            // When
+            val response = exceptionHandler.handleValidationConstraintViolation(anonymousViolation)
+
+            // Then
+            assertRespondsWith(HttpStatus.BAD_REQUEST, response)
+            assertEquals(listOf("unknown" to "Invalid value"), response.reportedFieldErrors())
+        }
     }
 
     // ----- Readable assertions -----
@@ -88,4 +109,14 @@ class GlobalExceptionHandlerTest {
 
     private fun requestBodyRejectedFor(vararg errors: FieldError): WebExchangeBindException =
         mockk { given { bindingResult.fieldErrors } returns errors.toList() }
+
+    private fun violationAt(vararg location: String, reason: String?): ConstraintViolation<*> {
+        val nodes = location.map { nodeName -> mockk<Path.Node> { given { name } returns nodeName } }
+        val path = mockk<Path> { given { iterator() } answers { nodes.toMutableList().iterator() } }
+
+        return mockk<ConstraintViolation<*>> {
+            given { propertyPath } returns path
+            given { message } returns reason
+        }
+    }
 }
