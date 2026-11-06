@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GlobalExceptionHandlerTest {
-    private val expectionHandler = GlobalExceptionHandler()
+    private val exceptionHandler = GlobalExceptionHandler()
 
     @Nested
     inner class GivenCustomerSendsInvalidOrderBody {
@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
                 )
 
             // When
-            val response = expectionHandler.handleWebExchangeBindException(invalidBody)
+            val response = exceptionHandler.handleWebExchangeBindException(invalidBody)
 
             // Then
             assertRespondsWith(HttpStatus.BAD_REQUEST, response)
@@ -51,7 +51,7 @@ class GlobalExceptionHandlerTest {
             val invalidBody = requestBodyRejectedFor(fieldError(fieldName = quantityField, reason = null))
 
             // When
-            val response = expectionHandler.handleWebExchangeBindException(invalidBody)
+            val response = exceptionHandler.handleWebExchangeBindException(invalidBody)
 
             // Then
             assertRespondsWith(HttpStatus.BAD_REQUEST, response)
@@ -60,6 +60,9 @@ class GlobalExceptionHandlerTest {
     }
     }
 
+    // ----- Readable assertions -----
+
+    /** HTTP status and ProblemDetail status must tell the client the same story. */
     private fun assertRespondsWith(
         expectedStatus: HttpStatus,
         response: ResponseEntity<ProblemDetail>,
@@ -75,6 +78,8 @@ class GlobalExceptionHandlerTest {
     @Suppress("UNCHECKED_CAST")
     private fun ResponseEntity<ProblemDetail>.reportedFieldErrors(): List<Pair<String, String>> =
         (this.body?.properties?.getOrDefault("arguments", emptyMap<String, String>()) as Map<String, String>).toList()
+
+    // ----- Input builders: hide framework plumbing, keep business values in the tests -----
 
     private fun fieldError(
         fieldName: String,
