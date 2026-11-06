@@ -110,7 +110,8 @@ class GlobalExceptionHandlerTest {
             // Given
             val orderPkConstraintKey = "orders_pkey"
             val expectedTitle = "Resource Conflict"
-            val duplicateOrder = DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}")
+            val duplicateOrder =
+                DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}")
 
             // When
             val response = exceptionHandler.handleDataIntegrityViolation(duplicateOrder)
@@ -144,11 +145,11 @@ class GlobalExceptionHandlerTest {
         expectedStatus: HttpStatus,
         response: ResponseEntity<ProblemDetail>,
     ) {
-        assertEquals(expectedStatus, response.statusCode)
+        assertEquals(expectedStatus, response.statusCode, "HTTP status")
         assertEquals(
             expectedStatus.value(),
             response.body?.status,
-            "ProblemDetail status should be ${expectedStatus.value()} but was ${response.body?.status}",
+            "ProblemDetail status",
         )
     }
 
