@@ -8,6 +8,7 @@ import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Path
 import org.junit.jupiter.api.Nested
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
@@ -118,10 +119,21 @@ class GlobalExceptionHandlerTest {
             assertRespondsWith(HttpStatus.CONFLICT, response)
             assertEquals(expectedTitle, response.body?.title)
             assertFalse(orderPkConstraintKey in response.body?.detail.orEmpty())
+        }
+
+        @Test
+        fun `when database fails for a server-side reason, then responds 500 without leaking database details`() {
+            // Given
+            val orderTableName = "orders"
+            val expectedErrorMessage = "Unexpected internal database error occurred"
+            val brokenSchema = InvalidDataAccessResourceUsageException("relation ${orderTableName.boxedValue} does not exist")
 
             // When
+            val response = exceptionHandler.handleNonTransientDataAccess(brokenSchema)
 
             // Then
+            assertRespondsWith(HttpStatus.INTERNAL_SERVER_ERROR, response)
+            assertEquals(expectedErrorMessage, response.body?.detail)
         }
     }
 
