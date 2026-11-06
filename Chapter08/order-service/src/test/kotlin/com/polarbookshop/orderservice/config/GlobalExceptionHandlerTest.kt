@@ -39,12 +39,28 @@ class GlobalExceptionHandlerTest {
             val response = expectionHandler.handleWebExchangeBindException(invalidBody)
 
             // Then
-            assertResponseWith(HttpStatus.BAD_REQUEST, response)
+            assertRespondsWith(HttpStatus.BAD_REQUEST, response)
             assertEquals(expectedFieldsAndMessages, response.reportedFieldErrors())
         }
+
+        @Test
+        fun `when field is invalid without reason, then explan it as Invalid value`() {
+            // Given
+            val quantityField = "quantity"
+            val expectedErrorMessage = "Invalid value"
+            val invalidBody = requestBodyRejectedFor(fieldError(fieldName = quantityField, reason = null))
+
+            // When
+            val response = expectionHandler.handleWebExchangeBindException(invalidBody)
+
+            // Then
+            assertRespondsWith(HttpStatus.BAD_REQUEST, response)
+            assertEquals(listOf(quantityField to expectedErrorMessage), response.reportedFieldErrors())
+        }
+    }
     }
 
-    private fun assertResponseWith(
+    private fun assertRespondsWith(
         expectedStatus: HttpStatus,
         response: ResponseEntity<ProblemDetail>,
     ) {
@@ -62,8 +78,8 @@ class GlobalExceptionHandlerTest {
 
     private fun fieldError(
         fieldName: String,
-        reason: String,
-    ) = FieldError("orderRequest", fieldName, reason)
+        reason: String?,
+    ) = FieldError("orderRequest", fieldName, null, false, null, null, reason)
 
     private fun requestBodyRejectedFor(vararg errors: FieldError): WebExchangeBindException =
         mockk { given { bindingResult.fieldErrors } returns errors.toList() }
