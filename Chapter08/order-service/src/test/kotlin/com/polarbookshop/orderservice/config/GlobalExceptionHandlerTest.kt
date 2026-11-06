@@ -65,6 +65,24 @@ class GlobalExceptionHandlerTest {
     @Nested
     inner class GivenCustomerSendsInvalidParameter {
         @Test
+        fun `when method parameter is invalid, then responds 400 naming parameter instead of method`() {
+            // Given
+            val quantityField = "quantity"
+            val quantityErrorMessage = "must be less than or equal to 5"
+            val invalidParam =
+                ConstraintViolationException(
+                    setOf(violationAt("submitOrder", quantityField, reason = quantityErrorMessage)),
+                )
+
+            // When
+            val response = exceptionHandler.handleValidationConstraintViolation(invalidParam)
+
+            // Then
+            assertRespondsWith(HttpStatus.BAD_REQUEST, response)
+            assertEquals(listOf(quantityField to quantityErrorMessage), response.reportedFieldErrors())
+        }
+
+        @Test
         fun `when violation has no location and no reason, then reports unknown with Invalid value`() {
             // Given
             val anonymousViolation =
@@ -110,7 +128,10 @@ class GlobalExceptionHandlerTest {
     private fun requestBodyRejectedFor(vararg errors: FieldError): WebExchangeBindException =
         mockk { given { bindingResult.fieldErrors } returns errors.toList() }
 
-    private fun violationAt(vararg location: String, reason: String?): ConstraintViolation<*> {
+    private fun violationAt(
+        vararg location: String,
+        reason: String?,
+    ): ConstraintViolation<*> {
         val nodes = location.map { nodeName -> mockk<Path.Node> { given { name } returns nodeName } }
         val path = mockk<Path> { given { iterator() } answers { nodes.toMutableList().iterator() } }
 
