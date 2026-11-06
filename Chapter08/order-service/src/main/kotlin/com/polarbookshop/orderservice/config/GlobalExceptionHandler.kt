@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.NonTransientDataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
@@ -59,6 +60,16 @@ class GlobalExceptionHandler {
         val detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, errorMessage).apply { title = "Resource Conflict" }
 
         log.info("Database integrity conflict: {}", ex.message)
+
+        return ResponseEntity.of(detail).build()
+    }
+
+    @ExceptionHandler(NonTransientDataAccessException::class)
+    fun handleNonTransientDataAccess(ex: NonTransientDataAccessException): ResponseEntity<ProblemDetail> {
+        val errorMessage = "Unexpected internal database error occurred"
+        val detail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage)
+
+        log.warn("Database persistence error (Server-side issue):", ex)
 
         return ResponseEntity.of(detail).build()
     }
