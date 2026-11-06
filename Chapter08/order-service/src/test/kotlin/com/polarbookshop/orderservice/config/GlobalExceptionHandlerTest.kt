@@ -1,11 +1,13 @@
 package com.polarbookshop.orderservice.config
 
 import io.mockk.bdd.given
+import io.mockk.core.ValueClassSupport.boxedValue
 import io.mockk.mockk
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Path
 import org.junit.jupiter.api.Nested
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
@@ -13,6 +15,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.support.WebExchangeBindException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class GlobalExceptionHandlerTest {
     private val exceptionHandler = GlobalExceptionHandler()
@@ -96,6 +99,29 @@ class GlobalExceptionHandlerTest {
             // Then
             assertRespondsWith(HttpStatus.BAD_REQUEST, response)
             assertEquals(listOf("unknown" to "Invalid value"), response.reportedFieldErrors())
+        }
+    }
+
+    @Nested
+    inner class GivenDatabaseRefusedTheChange {
+        @Test
+        fun `when the change conflict with existing data, then responds 409 Conflict with out leaking database details`() {
+            // Given
+            val orderPkConstraintKey = "orders_pkey"
+            val expectedTitle = "Resource Conflict"
+            val duplicateOrder = DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}")
+
+            // When
+            val response = exceptionHandler.handleDataIntegrityViolation(duplicateOrder)
+
+            // Then
+            assertRespondsWith(HttpStatus.CONFLICT, response)
+            assertEquals(expectedTitle, response.body?.title)
+            assertFalse(orderPkConstraintKey in response.body?.detail.orEmpty())
+
+            // When
+
+            // Then
         }
     }
 
