@@ -3,6 +3,7 @@ package com.polarbookshop.orderservice.config
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
@@ -47,6 +48,17 @@ class GlobalExceptionHandler {
             }
 
         log.info("Constraint violation: {}", validationErrors)
+
+        return ResponseEntity.of(detail).build()
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrityViolation(ex: DataIntegrityViolationException): ResponseEntity<ProblemDetail> {
+        val errorMessage =
+            "The request could not be completed due to a conflict with the current state of the resource (e.g. duplicate key)."
+        val detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, errorMessage).apply { title = "Resource Conflict" }
+
+        log.info("Database integrity conflict: {}", ex.message)
 
         return ResponseEntity.of(detail).build()
     }
