@@ -36,14 +36,14 @@ class GlobalExceptionHandlerTest {
                     isbnField to isbnErrorMessage,
                     quantityField to quantityErrorMessage,
                 )
-            val invalidBody =
+            val invalidBodyRequestWithUnorderedFieldErrors =
                 requestBodyRejectedFor(
                     fieldError(fieldName = quantityField, reason = quantityErrorMessage),
                     fieldError(fieldName = isbnField, reason = isbnErrorMessage),
                 )
 
             // When
-            val response = exceptionHandler.handleWebExchangeBindException(invalidBody)
+            val response = exceptionHandler.handleWebExchangeBindException(invalidBodyRequestWithUnorderedFieldErrors)
 
             // Then
             assertRespondsWith(HttpStatus.BAD_REQUEST, response)
