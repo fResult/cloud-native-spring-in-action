@@ -97,7 +97,6 @@ jobs:
         with:
           sarif_file: ${{ steps.image_scan_report.outputs.sarif }}
       - name: Enforce image vulnerability threshold
-        if: ${{ always() }}
         uses: anchore/scan-action@v7
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
