@@ -1,8 +1,8 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.1.1"
+    id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.10.3"
+    id("com.diffplug.spotless") version "8.11.0"
 }
 
 group = "com.polarbookshop"
@@ -11,7 +11,7 @@ description = "Centralizes the application configuration"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(26)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -19,17 +19,8 @@ repositories {
     mavenCentral()
 }
 
-/*
- * === Temporary security overrides ===
- * Override Spring portfolio to address vulnerabilities reported by Grype.
- * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
- */
-extra["jacksonAnnotationsVersion"] = "2.22"
-extra["tomcat.version"] = "11.0.26"
-extra["jackson-bom.version"] = "3.2.3"
-
 // === Explicit BOM selection ===
-extra["springCloudVersion"] = "2025.1.3"
+extra["springCloudVersion"] = "2025.1.4"
 
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-config-server")
@@ -60,10 +51,6 @@ spotless {
 }
 
 dependencyManagement {
-    dependencies {
-        dependency("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
-    }
-
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
