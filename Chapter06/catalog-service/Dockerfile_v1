@@ -1,4 +1,4 @@
-FROM eclipse-temurin:26-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /workspace
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} catalog-service.jar
