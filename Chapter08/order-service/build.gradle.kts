@@ -4,9 +4,9 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
-    id("org.springframework.boot") version "4.1.1"
+    id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.10.3"
+    id("com.diffplug.spotless") version "8.11.0"
 }
 
 group = "com.polarbookshop"
@@ -23,38 +23,19 @@ repositories {
     mavenCentral()
 }
 
-/*
- * === Temporary security overrides ===
- * Override Spring portfolio to address vulnerabilities reported by Grype.
- * TODO: Remove these overrides once Spring Boot 4.1.2 OR 4.2.0 is released
- */
-extra["jacksonAnnotationsVersion"] = "2.22"
-extra["scramVersion"] = "3.4"
-extra["jackson-bom.version"] = "3.2.3"
-
 // === Explicit dependency versions ===
 extra["mockkVersion"] = "1.14.11"
 extra["springMockKVersion"] = "5.0.1"
-extra["blockHoundVersion"] = "1.0.17.RELEASE"
+extra["blockHoundVersion"] = "1.0.18.RELEASE"
 extra["jnaVersion"] = "5.19.1"
 
 // === Explicit BOM selection ===
-extra["springCloudVersion"] = "2025.1.3"
-extra["okhttp.version"] = "5.5.0"
+extra["springCloudVersion"] = "2025.1.4"
+extra["okhttp.version"] = "5.5.1"
 
 val tiltDev = providers.gradleProperty("tiltDev").isPresent
 
 dependencies {
-    constraints {
-        implementation("com.ongres.scram:scram-client:${property("scramVersion")}") {
-            because("Scram API vulnerability")
-        }
-
-        implementation("com.ongres.scram:scram-common:${property("scramVersion")}") {
-            because("Scram API vulnerability")
-        }
-    }
-
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webclient")
@@ -103,10 +84,6 @@ dependencies {
 }
 
 dependencyManagement {
-    dependencies {
-        dependency("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
-    }
-
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
@@ -138,8 +115,10 @@ spotless {
 
 tasks.withType<BootBuildImage> {
     imageName = "${project.name}:${project.version}"
-    // The multi-architecture Jammy buildpack currently ships JRE 25 and 27, not 26.
-    val jvmVersion = if (tiltDev) "27" else "${java.toolchain.languageVersion.get()}"
+    val jvmVersion =
+        java.toolchain.languageVersion
+            .get()
+            .toString()
     if (tiltDev) {
         builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
         buildpacks = listOf("docker://paketobuildpacks/java:latest")
