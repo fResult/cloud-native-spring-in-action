@@ -155,7 +155,7 @@ tasks.withType<Test>().configureEach {
     systemProperty("spring.cloud.config.enabled", "false")
 
     // BlockHound configuration for Java 13+
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
-        jvmArgs("-XX:+AllowRedefinitionToAddDeleteMethods")
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
     }
 }
