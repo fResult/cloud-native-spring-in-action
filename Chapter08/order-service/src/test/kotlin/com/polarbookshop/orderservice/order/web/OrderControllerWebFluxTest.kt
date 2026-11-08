@@ -26,7 +26,7 @@ class OrderControllerWebFluxTest {
     private lateinit var orderService: OrderService
 
     companion object {
-        private fun buildRejectedOrder(
+        private fun rejectedOrderOf(
             isbn: String,
             quantity: Int,
         ): Order = Order.of(bookIsbn = isbn, quantity = quantity, status = OrderStatus.REJECTED)
@@ -38,7 +38,7 @@ class OrderControllerWebFluxTest {
         fun `when orders exists, then responds 200 with every order`() {
             // Given
             val acceptedOrder = Order.of("1234567891", "Title - Author", BigDecimal("9.90"), 1, OrderStatus.ACCEPTED)
-            val rejectedOrder = buildRejectedOrder(isbn = "1234567899", quantity = 2)
+            val rejectedOrder = rejectedOrderOf(isbn = "1234567899", quantity = 2)
 
             given { orderService.getAllOrders() } returns Flux.just(acceptedOrder, rejectedOrder)
 
@@ -82,29 +82,71 @@ class OrderControllerWebFluxTest {
         }
     }
 
-    @Test
-    fun `when book not available, then reject order`() {
-        // Given
-        val orderRequest = OrderRequest("1234567890", 3)
-        val expectedOrder = buildRejectedOrder(isbn = orderRequest.isbn!!, quantity = orderRequest.quantity!!)
-        given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
+    @Nested
+    inner class SubmitOrder {
+        private val validOrderRequest = OrderRequest(isbn = "1234567891", quantity = 3)
 
-        // When
-        val response =
+        private fun submit(orderRequest: OrderRequest) =
             webClient
                 .post()
                 .uri("/orders")
                 .bodyValue(orderRequest)
                 .exchange()
 
-        // Then
-        response
-            .expectStatus()
-            .is2xxSuccessful()
-            .expectBody(Order::class.java)
-            .value { actualOrder ->
-                assertNotNull(actualOrder)
-                assertEquals(expectedOrder.status, actualOrder.status)
+        @Nested
+        inner class GivenValidOrderRequest {
+            @Test
+            fun `when book is available, then reponds 201 with an accepted order`() {
+                // Given
+                val expectedAcceptedOrder =
+                    Order.of(
+                        validOrderRequest.isbn!!,
+                        "Title - Author",
+                        BigDecimal("12.90"),
+                        validOrderRequest.quantity!!,
+                        OrderStatus.ACCEPTED,
+                    )
+                given { orderService.submitOrder(validOrderRequest.isbn, validOrderRequest.quantity) } returns
+                    Mono.just(expectedAcceptedOrder)
+
+                // When
+                val response = submit(validOrderRequest)
+
+                // Then
+                response
+                    .expectStatus()
+                    .isCreated()
+                    .expectBody(Order::class.java)
+                    .value { actualOrder ->
+                        assertEquals(expectedAcceptedOrder, actualOrder)
+                    }
             }
+
+            @Test
+            fun `when book is not available, then responds 201 with rejected order`() {
+                // Given
+                val orderRequest = OrderRequest("1234567890", 3)
+                val expectedOrder = rejectedOrderOf(isbn = orderRequest.isbn!!, quantity = orderRequest.quantity!!)
+                given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
+
+                // When
+                val response =
+                    webClient
+                        .post()
+                        .uri("/orders")
+                        .bodyValue(orderRequest)
+                        .exchange()
+
+                // Then
+                response
+                    .expectStatus()
+                    .isCreated()
+                    .expectBody(Order::class.java)
+                    .value { actualOrder ->
+                        assertNotNull(actualOrder)
+                        assertEquals(expectedOrder.status, actualOrder.status)
+                    }
+            }
+        }
     }
 }
