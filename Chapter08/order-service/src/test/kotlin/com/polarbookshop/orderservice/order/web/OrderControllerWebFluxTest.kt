@@ -5,10 +5,14 @@ import com.polarbookshop.orderservice.order.domain.Order
 import com.polarbookshop.orderservice.order.domain.OrderService
 import com.polarbookshop.orderservice.order.domain.OrderStatus
 import io.mockk.bdd.given
+import org.junit.jupiter.api.Nested
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBodyList
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -26,6 +30,56 @@ class OrderControllerWebFluxTest {
             isbn: String,
             quantity: Int,
         ): Order = Order.of(bookIsbn = isbn, quantity = quantity, status = OrderStatus.REJECTED)
+    }
+
+    @Nested
+    inner class GetAllOrders {
+        @Test
+        fun `when orders exists, then responds 200 with every order`() {
+            // Given
+            val acceptedOrder = Order.of("1234567891", "Title - Author", BigDecimal("9.90"), 1, OrderStatus.ACCEPTED)
+            val rejectedOrder = buildRejectedOrder(isbn = "1234567899", quantity = 2)
+
+            given { orderService.getAllOrders() } returns Flux.just(acceptedOrder, rejectedOrder)
+
+            // When
+            val response = webClient.get().uri("/orders").exchange()
+
+            // Then
+            val orders =
+                response
+                    .expectStatus()
+                    .isOk()
+                    .expectBodyList<Order>()
+                    .returnResult()
+                    .responseBody
+                    .orEmpty()
+
+            assertEquals(2, orders.size)
+            assertEquals(acceptedOrder, orders.first())
+            assertEquals(rejectedOrder, orders[1])
+        }
+
+        @Test
+        fun `when orders do not exists, then responds 200 with empty list`() {
+            // Given
+            given { orderService.getAllOrders() } returns Flux.empty()
+
+            // When
+            val response = webClient.get().uri("/orders").exchange()
+
+            // Then
+            val orders =
+                response
+                    .expectStatus()
+                    .isOk()
+                    .expectBodyList<Order>()
+                    .returnResult()
+                    .responseBody
+                    .orEmpty()
+
+            assertEquals(0, orders.size)
+        }
     }
 
     @Test
