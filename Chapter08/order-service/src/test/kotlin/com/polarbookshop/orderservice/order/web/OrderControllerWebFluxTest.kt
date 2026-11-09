@@ -4,15 +4,13 @@ import com.ninjasquad.springmockk.MockkBean
 import com.polarbookshop.orderservice.order.domain.Order
 import com.polarbookshop.orderservice.order.domain.OrderService
 import com.polarbookshop.orderservice.order.domain.OrderStatus
+import com.polarbookshop.orderservice.order.web.fixture.InvalidOrderRequestTestCase
 import io.mockk.bdd.given
 import io.mockk.core.ValueClassSupport.boxedValue
 import io.mockk.verify
-import org.junit.jupiter.api.Named.named
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
@@ -164,31 +162,36 @@ class OrderControllerWebFluxTest {
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         inner class GivenInvalidOrderRequest {
-            fun invalidOrderRequests(): List<Arguments> {
+            fun invalidOrderRequests(): List<InvalidOrderRequestTestCase> {
                 val mustBeAtLeastOneItem = "You must order at least 1 item."
                 val cannotBeMoreThanFiveItems = "You cannot order more than 5 items."
                 val isbnMustBeDefined = "The book ISBN must be defined."
 
                 return listOf(
-                    arguments(
-                        named("ISBN is valid but quantity is under 1", OrderRequest(isbn = "1234567890", quantity = 0)),
-                        mapOf("quantity" to mustBeAtLeastOneItem),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN is valid but quantity is under 1",
+                        request = OrderRequest(isbn = "1234567890", quantity = 0),
+                        expectedFieldErrors = mapOf("quantity" to mustBeAtLeastOneItem),
                     ),
-                    arguments(
-                        named("ISBN is valid but quantity is above 5", OrderRequest(isbn = "1234567890", quantity = 6)),
-                        mapOf("quantity" to cannotBeMoreThanFiveItems),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN is valid but quantity is above 5",
+                        request = OrderRequest(isbn = "1234567890", quantity = 6),
+                        expectedFieldErrors = mapOf("quantity" to cannotBeMoreThanFiveItems),
                     ),
-                    arguments(
-                        named("ISBN is blank but quantity is valid", OrderRequest(isbn = "", quantity = 5)),
-                        mapOf("isbn" to isbnMustBeDefined),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN is blank but quantity is valid",
+                        request = OrderRequest(isbn = "", quantity = 5),
+                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
                     ),
-                    arguments(
-                        named("ISBN is null but quantity is valid", OrderRequest(isbn = null, quantity = 5)),
-                        mapOf("isbn" to isbnMustBeDefined),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN is null but quantity is valid",
+                        request = OrderRequest(isbn = null, quantity = 5),
+                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
                     ),
-                    arguments(
-                        named("ISBN is blank and quantity is above 5", OrderRequest(isbn = "", quantity = 6)),
-                        mapOf("isbn" to isbnMustBeDefined, "quantity" to cannotBeMoreThanFiveItems),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN is blank and quantity is above 5",
+                        request = OrderRequest(isbn = "", quantity = 6),
+                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined, "quantity" to cannotBeMoreThanFiveItems),
                     ),
                 )
             }
@@ -196,11 +199,10 @@ class OrderControllerWebFluxTest {
             @ParameterizedTest(name = "when {0}, then responds 400 listing only the invalid fields and place no order")
             @MethodSource("invalidOrderRequests")
             fun `when request body is invalid, then responds 400 listing only invalid fields and places no orders`(
-                invalidOrderRequest: OrderRequest,
-                expectedFieldErrors: Map<String, String>,
+                testCase: InvalidOrderRequestTestCase,
             ) {
                 // When
-                val response = submit(invalidOrderRequest)
+                val response = submit(testCase.request)
 
                 // Then
                 response
@@ -212,7 +214,7 @@ class OrderControllerWebFluxTest {
                     .jsonPath("$.status")
                     .isEqualTo(HttpStatus.BAD_REQUEST.value())
                     .jsonPath("$.arguments")
-                    .isEqualTo(expectedFieldErrors)
+                    .isEqualTo(testCase.expectedFieldErrors)
 
                 verify(exactly = 0) { orderService.submitOrder(any<String>(), any<Int>()) }
             }
