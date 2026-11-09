@@ -5,10 +5,12 @@ import com.polarbookshop.orderservice.order.domain.Order
 import com.polarbookshop.orderservice.order.domain.OrderService
 import com.polarbookshop.orderservice.order.domain.OrderStatus
 import io.mockk.bdd.given
+import io.mockk.core.ValueClassSupport.boxedValue
 import io.mockk.verify
 import org.junit.jupiter.api.Nested
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -184,6 +186,40 @@ class OrderControllerWebFluxTest {
                     .isEqualTo(expectedquantityErrorMessage)
 
                 verify(exactly = 0) { orderService.submitOrder(any<String>(), any<Int>()) }
+            }
+        }
+
+        @Nested
+        inner class GivenDatabaseRefusesOrder {
+            @Test
+            fun `when order conflicts with existing data, then responds 409 Conflict without leaking database details`() {
+                // Given
+                val expectedStatusCode = HttpStatus.CONFLICT
+                val expectedTitle = "Resource Conflict"
+                val expectedErrorMessage =
+                    "The request could not be completed due to a conflict with the current state of the resource (e.g. duplicate key)."
+
+                val orderPkConstraintKey = "orders_pkey"
+                val duplicateOrder =
+                    DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}")
+
+                given { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) } returns
+                    Mono.error(duplicateOrder)
+
+                // When
+                val response = submit(validOrderRequest)
+
+                // Then
+                response
+                    .expectStatus()
+                    .isEqualTo(expectedStatusCode)
+                    .expectBody()
+                    .jsonPath("$.status")
+                    .isEqualTo(expectedStatusCode.value())
+                    .jsonPath("$.title")
+                    .isEqualTo(expectedTitle)
+                    .jsonPath("$.detail")
+                    .isEqualTo(expectedErrorMessage)
             }
         }
     }
