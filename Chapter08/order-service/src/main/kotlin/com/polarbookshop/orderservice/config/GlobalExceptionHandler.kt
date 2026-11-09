@@ -66,7 +66,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(NonTransientDataAccessException::class)
     fun handleNonTransientDataAccess(ex: NonTransientDataAccessException): ResponseEntity<ProblemDetail> {
-        val errorMessage = "Unexpected internal database error occurred"
+        val errorMessage = "Unexpected internal database error occurred."
         val detail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage)
 
         log.warn("Database persistence error (Server-side issue):", ex)

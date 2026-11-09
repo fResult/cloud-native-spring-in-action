@@ -161,7 +161,7 @@ class OrderControllerWebFluxTest {
             fun `when ISBN is blank and quantity is above 5 , then responds 400 explaining each field and places no order`() {
                 // Given
                 val expectedIsbnErrorMessage = "The book ISBN must be defined."
-                val expectedquantityErrorMessage = "You cannot order more than 5 items"
+                val expectedquantityErrorMessage = "You cannot order more than 5 items."
                 val invalidOrderRequest = OrderRequest(isbn = "", quantity = 6)
 
                 // When
@@ -202,7 +202,7 @@ class OrderControllerWebFluxTest {
 
                 val orderPkConstraintKey = "orders_pkey"
                 val duplicateOrder =
-                    DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}")
+                    DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}.")
 
                 given { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) } returns
                     Mono.error(duplicateOrder)
