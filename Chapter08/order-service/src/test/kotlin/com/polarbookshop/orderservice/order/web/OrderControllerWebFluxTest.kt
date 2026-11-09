@@ -6,7 +6,7 @@ import com.polarbookshop.orderservice.order.domain.OrderService
 import com.polarbookshop.orderservice.order.domain.OrderStatus
 import com.polarbookshop.orderservice.order.web.fixture.InvalidOrderRequestTestCase
 import io.mockk.bdd.given
-import io.mockk.core.ValueClassSupport.boxedValue
+import io.mockk.called
 import io.mockk.verify
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
@@ -25,7 +25,6 @@ import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @WebFluxTest(OrderController::class)
 class OrderControllerWebFluxTest {
@@ -45,7 +44,7 @@ class OrderControllerWebFluxTest {
     @Nested
     inner class GetAllOrders {
         @Test
-        fun `when orders exists, then responds 200 with every order`() {
+        fun `when orders exist, then responds 200 with every order`() {
             // Given
             val acceptedOrder = Order.of("1234567891", "Title - Author", BigDecimal("9.90"), 1, OrderStatus.ACCEPTED)
             val rejectedOrder = rejectedOrderOf(isbn = "1234567899", quantity = 2)
@@ -68,10 +67,12 @@ class OrderControllerWebFluxTest {
             assertEquals(2, orders.size)
             assertEquals(acceptedOrder, orders.first())
             assertEquals(rejectedOrder, orders[1])
+
+            verify(exactly = 1) { orderService.getAllOrders() }
         }
 
         @Test
-        fun `when orders do not exists, then responds 200 with empty list`() {
+        fun `when no orders exist, then responds 200 with empty list`() {
             // Given
             given { orderService.getAllOrders() } returns Flux.empty()
 
@@ -89,6 +90,8 @@ class OrderControllerWebFluxTest {
                     .orEmpty()
 
             assertEquals(0, orders.size)
+
+            verify(exactly = 1) { orderService.getAllOrders() }
         }
     }
 
@@ -106,7 +109,7 @@ class OrderControllerWebFluxTest {
         @Nested
         inner class GivenValidOrderRequest {
             @Test
-            fun `when book is available, then reponds 201 with an accepted order`() {
+            fun `when book is available, then responds 201 with an accepted order`() {
                 // Given
                 val expectedAcceptedOrder =
                     Order.of(
@@ -130,21 +133,24 @@ class OrderControllerWebFluxTest {
                     .value { actualOrder ->
                         assertEquals(expectedAcceptedOrder, actualOrder)
                     }
+
+                verify(exactly = 1) { orderService.submitOrder(validOrderRequest.isbn, validOrderRequest.quantity) }
             }
 
             @Test
             fun `when book is not available, then responds 201 with rejected order`() {
                 // Given
-                val orderRequest = OrderRequest("1234567890", 3)
-                val expectedOrder = rejectedOrderOf(isbn = orderRequest.isbn!!, quantity = orderRequest.quantity!!)
-                given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
+                val notFoundBookOrderRequest = OrderRequest("1234567890", 3)
+                val expectedRejectedOrder = rejectedOrderOf(isbn = notFoundBookOrderRequest.isbn!!, quantity = notFoundBookOrderRequest.quantity!!)
+                given { orderService.submitOrder(notFoundBookOrderRequest.isbn, notFoundBookOrderRequest.quantity) } returns
+                    Mono.just(expectedRejectedOrder)
 
                 // When
                 val response =
                     webClient
                         .post()
                         .uri("/orders")
-                        .bodyValue(orderRequest)
+                        .bodyValue(notFoundBookOrderRequest)
                         .exchange()
 
                 // Then
@@ -153,9 +159,10 @@ class OrderControllerWebFluxTest {
                     .isCreated()
                     .expectBody(Order::class.java)
                     .value { actualOrder ->
-                        assertNotNull(actualOrder)
-                        assertEquals(expectedOrder.status, actualOrder.status)
+                        assertEquals(expectedRejectedOrder, actualOrder)
                     }
+
+                verify(exactly = 1) { orderService.submitOrder(notFoundBookOrderRequest.isbn, notFoundBookOrderRequest.quantity) }
             }
         }
 
@@ -165,6 +172,7 @@ class OrderControllerWebFluxTest {
             fun invalidOrderRequests(): List<InvalidOrderRequestTestCase> {
                 val mustBeAtLeastOneItem = "You must order at least 1 item."
                 val cannotBeMoreThanFiveItems = "You cannot order more than 5 items."
+                val quantityMustBeDefined = "The book quantity must be defined."
                 val isbnMustBeDefined = "The book ISBN must be defined."
 
                 return listOf(
@@ -179,13 +187,23 @@ class OrderControllerWebFluxTest {
                         expectedFieldErrors = mapOf("quantity" to cannotBeMoreThanFiveItems),
                     ),
                     InvalidOrderRequestTestCase(
+                        description = "ISBN is valid but quantity is missing",
+                        request = OrderRequest(isbn = "1234567890", quantity = null),
+                        expectedFieldErrors = mapOf("quantity" to quantityMustBeDefined),
+                    ),
+                    InvalidOrderRequestTestCase(
                         description = "ISBN is blank but quantity is valid",
                         request = OrderRequest(isbn = "", quantity = 5),
                         expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
                     ),
                     InvalidOrderRequestTestCase(
-                        description = "ISBN is null but quantity is valid",
+                        description = "ISBN is missing but quantity is valid",
                         request = OrderRequest(isbn = null, quantity = 5),
+                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
+                    ),
+                    InvalidOrderRequestTestCase(
+                        description = "ISBN contains only whitespace but quantity is valid",
+                        request = OrderRequest(isbn = "   ", quantity = 1),
                         expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
                     ),
                     InvalidOrderRequestTestCase(
@@ -196,9 +214,9 @@ class OrderControllerWebFluxTest {
                 )
             }
 
-            @ParameterizedTest(name = "when {0}, then responds 400 listing only the invalid fields and place no order")
             @MethodSource("invalidOrderRequests")
-            fun `when request body is invalid, then responds 400 listing only invalid fields and places no orders`(
+            @ParameterizedTest(name = "when {0}, then responds 400 listing only the invalid fields and places no order")
+            fun `when request body is invalid, then responds 400 listing only invalid fields and places no order`(
                 testCase: InvalidOrderRequestTestCase,
             ) {
                 // When
@@ -216,7 +234,7 @@ class OrderControllerWebFluxTest {
                     .jsonPath("$.arguments")
                     .isEqualTo(testCase.expectedFieldErrors)
 
-                verify(exactly = 0) { orderService.submitOrder(any<String>(), any<Int>()) }
+                verify { orderService wasNot called }
             }
         }
 
@@ -232,7 +250,7 @@ class OrderControllerWebFluxTest {
 
                 val orderPkConstraintKey = "orders_pkey"
                 val duplicateOrder =
-                    DataIntegrityViolationException("duplicate key value violates unique constraint ${orderPkConstraintKey.boxedValue}.")
+                    DataIntegrityViolationException("""duplicate key value violates unique constraint "$orderPkConstraintKey".""")
 
                 given { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) } returns
                     Mono.error(duplicateOrder)
@@ -251,15 +269,18 @@ class OrderControllerWebFluxTest {
                     .isEqualTo(expectedTitle)
                     .jsonPath("$.detail")
                     .isEqualTo(expectedErrorMessage)
+
+                verify(exactly = 1) { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) }
             }
 
+            @Test
             fun `when database fails for server-side reason, then responds 500 without leaking database details`() {
                 // Given
                 val expectedStatusCode = HttpStatus.INTERNAL_SERVER_ERROR
                 val expectedErrorMessage = "Unexpected internal database error occurred."
 
                 val orderTableName = "orders"
-                val brokenSchema = InvalidDataAccessResourceUsageException("relation ${orderTableName.boxedValue} does not exist")
+                val brokenSchema = InvalidDataAccessResourceUsageException("""relation "$orderTableName" does not exist""")
                 given { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) } returns Mono.error(brokenSchema)
 
                 // When
@@ -274,6 +295,8 @@ class OrderControllerWebFluxTest {
                     .isEqualTo(expectedStatusCode.value())
                     .jsonPath("$.detail")
                     .isEqualTo(expectedErrorMessage)
+
+                verify(exactly = 1) { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) }
             }
         }
     }
