@@ -7,7 +7,13 @@ import com.polarbookshop.orderservice.order.domain.OrderStatus
 import io.mockk.bdd.given
 import io.mockk.core.ValueClassSupport.boxedValue
 import io.mockk.verify
+import org.junit.jupiter.api.Named.named
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
 import org.springframework.dao.DataIntegrityViolationException
@@ -156,21 +162,45 @@ class OrderControllerWebFluxTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         inner class GivenInvalidOrderRequest {
-            @Test
-            fun `when ISBN is blank and quantity is above 5 , then responds 400 explaining each field and places no order`() {
-                // Given
-                val expectedIsbnErrorMessage = "The book ISBN must be defined."
-                val expectedquantityErrorMessage = "You cannot order more than 5 items."
-                val invalidOrderRequest = OrderRequest(isbn = "", quantity = 6)
+            fun invalidOrderRequests(): List<Arguments> {
+                val mustBeAtLeastOneItem = "You must order at least 1 item."
+                val cannotBeMoreThanFiveItems = "You cannot order more than 5 items."
+                val isbnMustBeDefined = "The book ISBN must be defined."
 
+                return listOf(
+                    arguments(
+                        named("ISBN is valid but quantity is under 1", OrderRequest(isbn = "1234567890", quantity = 0)),
+                        mapOf("quantity" to mustBeAtLeastOneItem),
+                    ),
+                    arguments(
+                        named("ISBN is valid but quantity is above 5", OrderRequest(isbn = "1234567890", quantity = 6)),
+                        mapOf("quantity" to cannotBeMoreThanFiveItems),
+                    ),
+                    arguments(
+                        named("ISBN is blank but quantity is valid", OrderRequest(isbn = "", quantity = 5)),
+                        mapOf("isbn" to isbnMustBeDefined),
+                    ),
+                    arguments(
+                        named("ISBN is null but quantity is valid", OrderRequest(isbn = null, quantity = 5)),
+                        mapOf("isbn" to isbnMustBeDefined),
+                    ),
+                    arguments(
+                        named("ISBN is blank and quantity is above 5", OrderRequest(isbn = "", quantity = 6)),
+                        mapOf("isbn" to isbnMustBeDefined, "quantity" to cannotBeMoreThanFiveItems),
+                    ),
+                )
+            }
+
+            @ParameterizedTest(name = "when {0}, then responds 400 listing only the invalid fields and place no order")
+            @MethodSource("invalidOrderRequests")
+            fun `when request body is invalid, then responds 400 listing only invalid fields and places no orders`(
+                invalidOrderRequest: OrderRequest,
+                expectedFieldErrors: Map<String, String>,
+            ) {
                 // When
-                val response =
-                    webClient
-                        .post()
-                        .uri("/orders")
-                        .bodyValue(invalidOrderRequest)
-                        .exchange()
+                val response = submit(invalidOrderRequest)
 
                 // Then
                 response
@@ -181,10 +211,8 @@ class OrderControllerWebFluxTest {
                     .expectBody()
                     .jsonPath("$.status")
                     .isEqualTo(HttpStatus.BAD_REQUEST.value())
-                    .jsonPath("$.arguments.isbn")
-                    .isEqualTo(expectedIsbnErrorMessage)
-                    .jsonPath("$.arguments.quantity")
-                    .isEqualTo(expectedquantityErrorMessage)
+                    .jsonPath("$.arguments")
+                    .isEqualTo(expectedFieldErrors)
 
                 verify(exactly = 0) { orderService.submitOrder(any<String>(), any<Int>()) }
             }
