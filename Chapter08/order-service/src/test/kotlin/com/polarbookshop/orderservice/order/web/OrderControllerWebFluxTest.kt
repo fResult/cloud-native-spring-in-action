@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
 import org.springframework.dao.DataIntegrityViolationException
@@ -141,7 +142,8 @@ class OrderControllerWebFluxTest {
             fun `when book is not available, then responds 201 with rejected order`() {
                 // Given
                 val notFoundBookOrderRequest = OrderRequest("1234567890", 3)
-                val expectedRejectedOrder = rejectedOrderOf(isbn = notFoundBookOrderRequest.isbn!!, quantity = notFoundBookOrderRequest.quantity!!)
+                val expectedRejectedOrder =
+                    rejectedOrderOf(isbn = notFoundBookOrderRequest.isbn!!, quantity = notFoundBookOrderRequest.quantity!!)
                 given { orderService.submitOrder(notFoundBookOrderRequest.isbn, notFoundBookOrderRequest.quantity) } returns
                     Mono.just(expectedRejectedOrder)
 
@@ -163,6 +165,33 @@ class OrderControllerWebFluxTest {
                     }
 
                 verify(exactly = 1) { orderService.submitOrder(notFoundBookOrderRequest.isbn, notFoundBookOrderRequest.quantity) }
+            }
+
+            @ValueSource(ints = [1, 5])
+            @ParameterizedTest(name = "when quantity is {0}, then responds 201 with order")
+            fun `when quantity is in allowed boundaries, then accepts order`(validQuantity: Int) {
+                // Given
+                val orderRequest = OrderRequest("1234567891", validQuantity)
+                val expectedOrder =
+                    Order.of(
+                        orderRequest.isbn!!,
+                        "Title - Author",
+                        BigDecimal("12.90"),
+                        orderRequest.quantity!!,
+                        OrderStatus.ACCEPTED,
+                    )
+
+                given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
+
+                // When
+                val response = submit(orderRequest)
+
+                // Then
+                response.expectStatus().isCreated().expectBody(Order::class.java).value { actualOrder ->
+                    assertEquals(expectedOrder, actualOrder)
+                }
+
+                verify(exactly = 1) { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) }
             }
         }
 

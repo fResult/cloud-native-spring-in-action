@@ -126,7 +126,7 @@ class GlobalExceptionHandlerTest {
         fun `when database fails for a server-side reason, then responds 500 without leaking database details`() {
             // Given
             val orderTableName = "orders"
-            val expectedErrorMessage = "Unexpected internal database error occurred"
+            val expectedErrorMessage = "Unexpected internal database error occurred."
             val brokenSchema = InvalidDataAccessResourceUsageException("relation ${orderTableName.boxedValue} does not exist")
 
             // When

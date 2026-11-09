@@ -80,6 +80,6 @@ class OrderRequestValidationTest {
         listOf(
             Arguments.of("quantity is not defined", null, "The book quantity must be defined."),
             Arguments.of("quantity is lower than min", 0, "You must order at least 1 item."),
-            Arguments.of("quantity is higher than max", 7, "You cannot order more than 5 items"),
+            Arguments.of("quantity is higher than max", 7, "You cannot order more than 5 items."),
         )
 }
