@@ -5,9 +5,12 @@ import com.polarbookshop.orderservice.order.domain.Order
 import com.polarbookshop.orderservice.order.domain.OrderService
 import com.polarbookshop.orderservice.order.domain.OrderStatus
 import io.mockk.bdd.given
+import io.mockk.verify
 import org.junit.jupiter.api.Nested
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBodyList
 import reactor.core.publisher.Flux
@@ -146,6 +149,41 @@ class OrderControllerWebFluxTest {
                         assertNotNull(actualOrder)
                         assertEquals(expectedOrder.status, actualOrder.status)
                     }
+            }
+        }
+
+        @Nested
+        inner class GivenInvalidOrderRequest {
+            @Test
+            fun `when ISBN is blank and quantity is above 5 , then responds 400 explaining each field and places no order`() {
+                // Given
+                val expectedIsbnErrorMessage = "The book ISBN must be defined."
+                val expectedquantityErrorMessage = "You cannot order more than 5 items"
+                val invalidOrderRequest = OrderRequest(isbn = "", quantity = 6)
+
+                // When
+                val response =
+                    webClient
+                        .post()
+                        .uri("/orders")
+                        .bodyValue(invalidOrderRequest)
+                        .exchange()
+
+                // Then
+                response
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectHeader()
+                    .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                    .expectBody()
+                    .jsonPath("$.status")
+                    .isEqualTo(HttpStatus.BAD_REQUEST.value())
+                    .jsonPath("$.arguments.isbn")
+                    .isEqualTo(expectedIsbnErrorMessage)
+                    .jsonPath("$.arguments.quantity")
+                    .isEqualTo(expectedquantityErrorMessage)
+
+                verify(exactly = 0) { orderService.submitOrder(any<String>(), any<Int>()) }
             }
         }
     }
