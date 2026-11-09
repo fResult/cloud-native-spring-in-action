@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
 import org.springframework.dao.DataIntegrityViolationException
@@ -166,77 +165,23 @@ class OrderControllerWebFluxTest {
 
                 verify(exactly = 1) { orderService.submitOrder(notFoundBookOrderRequest.isbn, notFoundBookOrderRequest.quantity) }
             }
-
-            @ValueSource(ints = [1, 5])
-            @ParameterizedTest(name = "when quantity is {0}, then responds 201 with order")
-            fun `when quantity is in allowed boundaries, then accepts order`(validQuantity: Int) {
-                // Given
-                val orderRequest = OrderRequest("1234567891", validQuantity)
-                val expectedOrder =
-                    Order.of(
-                        orderRequest.isbn!!,
-                        "Title - Author",
-                        BigDecimal("12.90"),
-                        orderRequest.quantity!!,
-                        OrderStatus.ACCEPTED,
-                    )
-
-                given { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) } returns Mono.just(expectedOrder)
-
-                // When
-                val response = submit(orderRequest)
-
-                // Then
-                response.expectStatus().isCreated().expectBody(Order::class.java).value { actualOrder ->
-                    assertEquals(expectedOrder, actualOrder)
-                }
-
-                verify(exactly = 1) { orderService.submitOrder(orderRequest.isbn, orderRequest.quantity) }
-            }
         }
 
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         inner class GivenInvalidOrderRequest {
             fun invalidOrderRequests(): List<InvalidOrderRequestTestCase> {
-                val mustBeAtLeastOneItem = "You must order at least 1 item."
                 val cannotBeMoreThanFiveItems = "You cannot order more than 5 items."
-                val quantityMustBeDefined = "The book quantity must be defined."
                 val isbnMustBeDefined = "The book ISBN must be defined."
 
                 return listOf(
-                    InvalidOrderRequestTestCase(
-                        description = "ISBN is valid but quantity is under 1",
-                        request = OrderRequest(isbn = "1234567890", quantity = 0),
-                        expectedFieldErrors = mapOf("quantity" to mustBeAtLeastOneItem),
-                    ),
-                    InvalidOrderRequestTestCase(
-                        description = "ISBN is valid but quantity is above 5",
-                        request = OrderRequest(isbn = "1234567890", quantity = 6),
-                        expectedFieldErrors = mapOf("quantity" to cannotBeMoreThanFiveItems),
-                    ),
-                    InvalidOrderRequestTestCase(
-                        description = "ISBN is valid but quantity is missing",
-                        request = OrderRequest(isbn = "1234567890", quantity = null),
-                        expectedFieldErrors = mapOf("quantity" to quantityMustBeDefined),
-                    ),
-                    InvalidOrderRequestTestCase(
-                        description = "ISBN is blank but quantity is valid",
-                        request = OrderRequest(isbn = "", quantity = 5),
-                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
-                    ),
                     InvalidOrderRequestTestCase(
                         description = "ISBN is missing but quantity is valid",
                         request = OrderRequest(isbn = null, quantity = 5),
                         expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
                     ),
                     InvalidOrderRequestTestCase(
-                        description = "ISBN contains only whitespace but quantity is valid",
-                        request = OrderRequest(isbn = "   ", quantity = 1),
-                        expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined),
-                    ),
-                    InvalidOrderRequestTestCase(
-                        description = "ISBN is blank and quantity is above 5",
+                        description = "ISBN is blank and quantity is higher than the maximum",
                         request = OrderRequest(isbn = "", quantity = 6),
                         expectedFieldErrors = mapOf("isbn" to isbnMustBeDefined, "quantity" to cannotBeMoreThanFiveItems),
                     ),
