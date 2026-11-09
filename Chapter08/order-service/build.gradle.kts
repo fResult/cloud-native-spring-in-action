@@ -23,6 +23,13 @@ repositories {
     mavenCentral()
 }
 
+/*
+ * === Temporary security overrides ===
+ * Override Spring portfolio to address vulnerabilities reported by Grype.
+ * TODO: Remove these overrides once Spring Boot 4.1.3 OR 4.2.0 is released
+ */
+extra["scramVersion"] = "3.4"
+
 // === Explicit dependency versions ===
 extra["mockkVersion"] = "1.14.11"
 extra["springMockKVersion"] = "5.0.1"
@@ -36,6 +43,16 @@ extra["okhttp.version"] = "5.5.1"
 val tiltDev = providers.gradleProperty("tiltDev").isPresent
 
 dependencies {
+    constraints {
+        runtimeOnly("com.ongres.scram:scram-client:${property("scramVersion")}") {
+            because("Fix GHSA-p9jg-fcr6-3mhf (CVE-2026-53712)")
+        }
+
+        runtimeOnly("com.ongres.scram:scram-common:${property("scramVersion")}") {
+            because("Fix GHSA-p9jg-fcr6-3mhf (CVE-2026-53712)")
+        }
+    }
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webclient")
