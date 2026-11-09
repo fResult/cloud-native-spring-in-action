@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -218,6 +219,29 @@ class OrderControllerWebFluxTest {
                     .isEqualTo(expectedStatusCode.value())
                     .jsonPath("$.title")
                     .isEqualTo(expectedTitle)
+                    .jsonPath("$.detail")
+                    .isEqualTo(expectedErrorMessage)
+            }
+
+            fun `when database fails for server-side reason, then responds 500 without leaking database details`() {
+                // Given
+                val expectedStatusCode = HttpStatus.INTERNAL_SERVER_ERROR
+                val expectedErrorMessage = "Unexpected internal database error occurred."
+
+                val orderTableName = "orders"
+                val brokenSchema = InvalidDataAccessResourceUsageException("relation ${orderTableName.boxedValue} does not exist")
+                given { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) } returns Mono.error(brokenSchema)
+
+                // When
+                val response = submit(validOrderRequest)
+
+                // Then
+                response
+                    .expectStatus()
+                    .isEqualTo(expectedStatusCode)
+                    .expectBody()
+                    .jsonPath("$.status")
+                    .isEqualTo(expectedStatusCode.value())
                     .jsonPath("$.detail")
                     .isEqualTo(expectedErrorMessage)
             }
