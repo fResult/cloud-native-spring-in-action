@@ -14,15 +14,21 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
+import org.springframework.core.MethodParameter
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBodyList
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.BindingResult
+import org.springframework.validation.FieldError
+import org.springframework.web.bind.support.WebExchangeBindException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
+import kotlin.reflect.jvm.javaMethod
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -272,6 +278,49 @@ class OrderControllerWebFluxTest {
 
                 verify(exactly = 1) { orderService.submitOrder(validOrderRequest.isbn!!, validOrderRequest.quantity!!) }
             }
+        }
+
+        @Nested
+        inner class GivenValidationErrorWithoutDefaultMessage {
+            @Test
+            fun `when web layer receives field error without message, then responds with generic validation message`() {
+                // Given
+                val expectedGenericErrorMessage = "Invalid value."
+
+                val orderRequest = OrderRequest("1234567891", 3)
+                val fieldErrorWithoutMessage =
+                    FieldError("orderRequest", "isbn", null, false, null, null, null)
+                val bindingResult =
+                    BeanPropertyBindingResult(orderRequest, "orderRequest")
+                        .apply { addError(fieldErrorWithoutMessage) }
+                val bindException = createBindException(bindingResult)
+
+                given { orderService.submitOrder(orderRequest.isbn!!, orderRequest.quantity!!) } returns Mono.error(bindException)
+
+                // When
+                val response = submit(orderRequest)
+
+                // Then
+                response
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectHeader()
+                    .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                    .expectBody()
+                    .jsonPath("$.status")
+                    .isEqualTo(HttpStatus.BAD_REQUEST.value())
+                    .jsonPath("$.arguments.isbn")
+                    .isEqualTo(expectedGenericErrorMessage)
+            }
+        }
+
+        private fun createBindException(bindingResult: BindingResult): WebExchangeBindException {
+            val submitOrderFunc = OrderController::submitOrder
+
+            return WebExchangeBindException(
+                MethodParameter.forExecutable(submitOrderFunc.javaMethod!!, 0),
+                bindingResult,
+            )
         }
     }
 }

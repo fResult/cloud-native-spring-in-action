@@ -76,14 +76,14 @@ class GlobalExceptionHandler {
 
     private fun toErrorFieldAndMessage(error: FieldError): Pair<String, String> {
         val fieldName = error.field
-        val errorMessage = error.defaultMessage ?: "Invalid value"
+        val errorMessage = error.defaultMessage ?: "Invalid value."
 
         return fieldName to errorMessage
     }
 
     private fun toErrorFieldAndMessage(violation: ConstraintViolation<*>): Pair<String, String> {
         val paramName = violation.propertyPath.lastOrNull()?.name ?: "unknown"
-        val errorMessage = violation.message ?: "Invalid value"
+        val errorMessage = violation.message ?: "Invalid value."
 
         return paramName to errorMessage
     }
