@@ -3,7 +3,7 @@ package com.polarbookshop.orderservice.book.web
 import com.polarbookshop.orderservice.book.Book
 import com.polarbookshop.orderservice.config.BookHttpApi
 import com.polarbookshop.orderservice.config.CatalogServiceProperties
-import io.netty.handler.timeout.ReadTimeoutException
+import org.springframework.core.NestedExceptionUtils
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorResume
 import reactor.util.retry.Retry
+import java.net.ConnectException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
@@ -33,7 +34,7 @@ class CatalogBookClient internal constructor(
 
     fun isTransientFailure(ex: Throwable) =
         when (ex) {
-            is WebClientRequestException -> ex.cause is ReadTimeoutException
+            is WebClientRequestException -> NestedExceptionUtils.getMostSpecificCause(ex) is ConnectException
             is WebClientResponseException -> ex.statusCode.is5xxServerError
             else -> false
         }
