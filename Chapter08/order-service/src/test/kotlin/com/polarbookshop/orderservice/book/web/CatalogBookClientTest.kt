@@ -3,6 +3,8 @@ package com.polarbookshop.orderservice.book.web
 import com.polarbookshop.orderservice.book.Book
 import com.polarbookshop.orderservice.config.BookHttpApi
 import com.polarbookshop.orderservice.config.CatalogServiceProperties
+import com.polarbookshop.orderservice.testsupport.http.delayedResponseWith
+import com.polarbookshop.orderservice.testsupport.http.responseWith
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -29,7 +31,8 @@ class CatalogBookClientTest {
     private val mockWebServer: MockWebServer = MockWebServer()
 
     val mapper = ObjectMapper()
-    val responseWith = mockWebServer.responseWith(mapper)
+    private val responseWith = mockWebServer.responseWith(mapper)
+    private val delayedResponseWith = mockWebServer.delayedResponseWith(mapper)
 
     private val bookHttpApi by lazy {
         val webClient = WebClient.create(mockWebServer.url("/").toString())
@@ -88,7 +91,7 @@ class CatalogBookClientTest {
     fun `when book exists, then return book`() {
         // Given
         val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
-        responseWith(expectedBook, HttpStatus.OK)
+        responseWith(expectedBook, status = HttpStatus.OK)
 
         // When
         val actualBook = bookClient.getBookByIsbn(expectedBook.isbn)
@@ -125,7 +128,7 @@ class CatalogBookClientTest {
             MockResponse
                 .Builder()
                 .body("""{"title": "Title"}""")
-                .headers(headersOf("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .headers(headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
                 .headersDelay(5, TimeUnit.SECONDS)
                 .bodyDelay(5, TimeUnit.SECONDS)
                 .build()
@@ -249,11 +252,12 @@ class CatalogBookClientTest {
     @Test
     fun `when catalog returns malformed book data, then returns no book without retrying`() {
         // Given
-        val malformedResponse = MockResponse(
-            code = HttpStatus.OK.value(),
-            headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
-            body = """{"isbn": ""invalid-json""}""",
-        )
+        val malformedResponse =
+            MockResponse(
+                code = HttpStatus.OK.value(),
+                headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
+                body = """{"isbn": ""invalid-json""}""",
+            )
 
         mockWebServer.enqueue(malformedResponse)
 
@@ -265,27 +269,3 @@ class CatalogBookClientTest {
         assertEquals(1, mockWebServer.requestCount)
     }
 }
-
-interface MockResponseEnqueuer {
-    operator fun <T> invoke(
-        response: T? = null,
-        status: HttpStatus = HttpStatus.OK,
-    )
-}
-
-private fun MockWebServer.responseWith(mapper: ObjectMapper): MockResponseEnqueuer =
-    object : MockResponseEnqueuer {
-        override fun <T> invoke(
-            response: T?,
-            status: HttpStatus,
-        ) {
-            val headers = headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            val mockResponse =
-                MockResponse(
-                    code = status.value(),
-                    headers = headers,
-                    body = response.let { mapper.writeValueAsString(it) }.orEmpty(),
-                )
-            enqueue(mockResponse)
-        }
-    }
