@@ -23,7 +23,9 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class CatalogBookClientTest {
@@ -41,14 +43,16 @@ class CatalogBookClientTest {
         return@lazy HttpServiceProxyFactory.builderFor(adapter).build().createClient(BookHttpApi::class.java)
     }
 
-    private val bookClient by lazy {
+    private val bookClient by lazy(::createBookClient)
+
+    private fun createBookClient(responseTimeout: Duration = 5.seconds): CatalogBookClient {
         val properties =
             CatalogServiceProperties().apply {
-                uri = URI.create("http://localhost:${mockWebServer.port}")
-                responseTimeout = 200.milliseconds.toJavaDuration()
+                this.uri = URI.create("http://localhost:${mockWebServer.port}")
+                this.responseTimeout = responseTimeout.toJavaDuration()
             }
 
-        return@lazy CatalogBookClient(bookHttpApi, properties)
+        return CatalogBookClient(bookHttpApi, properties)
     }
 
     @Test
@@ -169,21 +173,55 @@ class CatalogBookClientTest {
         val expectedNoRetryRequestCount = 1
 
         val isbn = "1234567890"
-        val slowResponse =
-            MockResponse
-                .Builder()
-                .headers(headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                .headersDelay(1, TimeUnit.SECONDS)
-                .build()
-
-        mockWebServer.enqueue(slowResponse)
+        val slowBookClient = createBookClient(responseTimeout = 500.milliseconds)
+        delayedResponseWith<Book>(delay = 2, timeUnit = TimeUnit.SECONDS)
 
         // When
-        val result = bookClient.getBookByIsbn(isbn)
+        val result = slowBookClient.getBookByIsbn(isbn)
 
         // Then
         StepVerifier.create(result).verifyComplete()
 
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    @Test
+    fun `when catalog response exceeds attempt timeout, then returns no book without retrying`() {
+        // Given
+        val expectedNoRetryRequestCount = 1
+
+        val maxAllowedWaitDuration = 10.milliseconds
+        val slowResponseDelayMs = 100L
+        val isbn = "1234567890"
+        val expectedBook = Book(isbn, "Title", "Author", BigDecimal("9.90"))
+        val timeoutBookClient = createBookClient(responseTimeout = maxAllowedWaitDuration)
+
+        delayedResponseWith(expectedBook, delay = slowResponseDelayMs, timeUnit = TimeUnit.MILLISECONDS)
+        responseWith(expectedBook)
+
+        // When
+        val result = timeoutBookClient.getBookByIsbn(isbn)
+
+        // Then
+        StepVerifier.create(result).verifyComplete()
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    @Test
+    fun `when catalog responds before attempt timeout, then returns the book without retrying`() {
+        // Given
+        val expectedNoRetryRequestCount = 1
+
+        val isbn = "1234567890"
+        val expectedBook = Book(isbn, "Title", "Author", BigDecimal("9.90"))
+        val timeoutBookClient = createBookClient(responseTimeout = 3.seconds)
+        delayedResponseWith(expectedBook, delay = 1)
+
+        // When
+        val result = timeoutBookClient.getBookByIsbn(isbn)
+
+        // Then
+        StepVerifier.create(result).expectNext(expectedBook).verifyComplete()
         assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
     }
 
