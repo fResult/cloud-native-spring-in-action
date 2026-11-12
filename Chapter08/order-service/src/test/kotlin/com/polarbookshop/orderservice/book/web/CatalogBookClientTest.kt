@@ -5,6 +5,8 @@ import com.polarbookshop.orderservice.config.BookHttpApi
 import com.polarbookshop.orderservice.config.CatalogServiceProperties
 import com.polarbookshop.orderservice.testsupport.http.delayedResponseWith
 import com.polarbookshop.orderservice.testsupport.http.responseWith
+import io.mockk.bdd.given
+import io.mockk.mockk
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -14,13 +16,19 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import java.net.ConnectException
 import java.net.URI
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.incrementAndFetch
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration
@@ -292,5 +300,38 @@ class CatalogBookClientTest {
         // Then
         StepVerifier.create(result).verifyComplete()
         assertEquals(1, mockWebServer.requestCount)
+    }
+
+    @Test
+    @OptIn(ExperimentalAtomicApi::class)
+    fun `when catalog connection is refused, then retries before returning no book`() {
+        // Given
+        val isbn = "1234567890"
+        val attempts = AtomicInt(0)
+        val httpApi = mockk<BookHttpApi>()
+        val catalogServiceUri = URI.create("http://catalog-service")
+        val connectException = ConnectException("Connection refused")
+        val connectionFailure =
+            WebClientRequestException(
+                connectException,
+                HttpMethod.GET,
+                catalogServiceUri,
+                HttpHeaders.EMPTY,
+            )
+        val properties = CatalogServiceProperties().apply { uri = catalogServiceUri }
+        val client = CatalogBookClient(httpApi, properties)
+
+        given { httpApi.getBookByIsbn(isbn) } returns
+            Mono.defer {
+                attempts.incrementAndFetch()
+                Mono.error(connectionFailure)
+            }
+
+        // When
+        val result = client.getBookByIsbn(isbn)
+
+        // Then
+        StepVerifier.create(result).verifyComplete()
+        assertEquals(4, attempts.load())
     }
 }
