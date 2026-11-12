@@ -43,7 +43,7 @@ class CatalogBookClientTest {
     @field:StartStop
     private val mockWebServer: MockWebServer = MockWebServer()
 
-    val mapper = ObjectMapper()
+    private val mapper = ObjectMapper()
     private val responseWith = mockWebServer.responseWith(mapper)
     private val delayedResponseWith = mockWebServer.delayedResponseWith(mapper)
 
@@ -68,6 +68,7 @@ class CatalogBookClientTest {
 
     @Test
     fun `when books exist, then returns books`() {
+        // Given
         val expectedBooks =
             listOf(
                 Book("1234567891", "Title1", "Author1", BigDecimal.valueOf(19.90)),
@@ -75,12 +76,12 @@ class CatalogBookClientTest {
             )
         responseWith(expectedBooks)
 
-        // WHen
-        val actualBooks = bookClient.getBooks()
+        // When
+        val result = bookClient.getBooks()
 
         // Then
         StepVerifier
-            .create(actualBooks)
+            .create(result)
             .expectNext(expectedBooks.first())
             .expectNext(expectedBooks[1])
             .verifyComplete()
@@ -96,10 +97,10 @@ class CatalogBookClientTest {
         responseWith(response = emptyList<Book>())
 
         // When
-        val notFoundBook = bookClient.getBooks()
+        val result = bookClient.getBooks()
 
         // Then
-        StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
+        StepVerifier.create(result).expectNextCount(0).verifyComplete()
     }
 
     @Test
@@ -109,10 +110,10 @@ class CatalogBookClientTest {
         responseWith(expectedBook, status = HttpStatus.OK)
 
         // When
-        val actualBook = bookClient.getBookByIsbn(expectedBook.isbn)
+        val result = bookClient.getBookByIsbn(expectedBook.isbn)
 
         // Then
-        StepVerifier.create(actualBook).expectNext(expectedBook).verifyComplete()
+        StepVerifier.create(result).expectNext(expectedBook).verifyComplete()
 
         val request = mockWebServer.takeRequest()
         assertEquals(HttpMethod.GET.name(), request.method)
@@ -120,37 +121,62 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when catalog returns 503 once, then retries and returns book`() {
-        // Given
-        val book = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
-
-        mockWebServer.enqueue(MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value()))
-        responseWith(book)
-
-        // When
-        val result = bookClient.getBookByIsbn(book.isbn)
-
-        // Then
-        StepVerifier.create(result).expectNext(book).verifyComplete()
-        assertEquals(2, mockWebServer.requestCount)
-    }
-
-    @Test
-    fun `when catalog does not respond before the timeout, then returns no book without retrying`() {
+    fun `when catalog returns 404, then returns no book without retrying`() {
         // Given
         val expectedNoRetryRequestCount = 1
 
-        val isbn = "1234567890"
-        val slowBookClient = createBookClient(responseTimeout = 500.milliseconds)
-        delayedResponseWith<Book>(delay = 2, timeUnit = TimeUnit.SECONDS)
+        val response = MockResponse(HttpStatus.NOT_FOUND.value())
+        mockWebServer.enqueue(response)
 
         // When
-        val result = slowBookClient.getBookByIsbn(isbn)
+        val result = bookClient.getBookByIsbn("not-found-isbn")
 
         // Then
         StepVerifier.create(result).verifyComplete()
-
         assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    @ParameterizedTest(name = "when {0}, then returns no book without retrying")
+    @MethodSource("nonRetryableCatalogResponses")
+    fun `when catalog returns non-retryable client error, then returns no book without retrying`(
+        testCase: NonRetryableCatalogResponseTestCase,
+    ) {
+        // Given
+        val expectedNoRetryRequestCount = 1
+
+        val nonRetryableResponse = MockResponse(testCase.status.value())
+        mockWebServer.enqueue(nonRetryableResponse)
+
+        // When
+        val result = bookClient.getBookByIsbn("invalid-isbn")
+
+        // Then
+        StepVerifier.create(result).verifyComplete()
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    companion object {
+        /** 404 is intentionally excluded because it has a dedicated business fallback test. */
+        @JvmStatic
+        private fun nonRetryableCatalogResponses(): List<NonRetryableCatalogResponseTestCase> =
+            listOf(
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 400 Bad Request",
+                    status = HttpStatus.BAD_REQUEST,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 401 Unauthorized",
+                    status = HttpStatus.UNAUTHORIZED,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 403 Forbidden",
+                    status = HttpStatus.FORBIDDEN,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 409 Conflict",
+                    status = HttpStatus.CONFLICT,
+                ),
+            )
     }
 
     @Test
@@ -158,8 +184,8 @@ class CatalogBookClientTest {
         // Given
         val expectedNoRetryRequestCount = 1
 
-        val maxAllowedWaitDuration = 10.milliseconds
-        val slowResponseDelayMs = 100L
+        val maxAllowedWaitDuration = 50.milliseconds
+        val slowResponseDelayMs = 200L
         val isbn = "1234567890"
         val expectedBook = Book(isbn, "Title", "Author", BigDecimal("9.90"))
         val timeoutBookClient = createBookClient(responseTimeout = maxAllowedWaitDuration)
@@ -194,12 +220,30 @@ class CatalogBookClientTest {
     }
 
     @Test
+    fun `when catalog returns 503 once, then retries and returns the book`() {
+        // Given
+        val book = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
+
+        mockWebServer.enqueue(MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value()))
+        responseWith(book)
+
+        // When
+        val result = bookClient.getBookByIsbn(book.isbn)
+
+        // Then
+        StepVerifier.create(result).expectNext(book).verifyComplete()
+        assertEquals(2, mockWebServer.requestCount)
+    }
+
+    @Test
     fun `when catalog keeps returning server errors, then returns no book after exhausting retries`() {
         // Given
         val expectedExhaustingRetryRequestCount = 4
 
-        val response = MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value())
-        repeat(4) { mockWebServer.enqueue(response) }
+        repeat(4) {
+            val response = MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value())
+            mockWebServer.enqueue(response)
+        }
 
         // When
         val result = bookClient.getBookByIsbn("1234567890")
@@ -207,81 +251,6 @@ class CatalogBookClientTest {
         // Then
         StepVerifier.create(result).verifyComplete()
         assertEquals(expectedExhaustingRetryRequestCount, mockWebServer.requestCount)
-    }
-
-    @ParameterizedTest(name = "when {0}, then returns no book without retrying")
-    @MethodSource("nonRetryableCatalogResponses")
-    fun `when catalog returns non-retryable client error, then returns no book without retrying`(
-        testCase: NonRetryableCatalogResponseTestCase,
-    ) {
-        // Given
-        val expectedNoRetryRequestCount = 1
-
-        val nonRetryableResponse = MockResponse(testCase.status.value())
-        mockWebServer.enqueue(nonRetryableResponse)
-
-        // When
-        val result = bookClient.getBookByIsbn("invalid-isbn")
-
-        // Then
-        StepVerifier.create(result).verifyComplete()
-        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
-    }
-
-    companion object {
-        /** 404 is intentionally excluded because it has a dedicated business fallback test. */
-        @JvmStatic
-        private fun nonRetryableCatalogResponses() =
-            listOf(
-                NonRetryableCatalogResponseTestCase(
-                    description = "Catalog returns 400 Bad Request",
-                    status = HttpStatus.BAD_REQUEST,
-                ),
-                NonRetryableCatalogResponseTestCase(
-                    description = "Catalog returns 401 Unauthorized",
-                    status = HttpStatus.UNAUTHORIZED,
-                ),
-                NonRetryableCatalogResponseTestCase(
-                    description = "Catalog returns 403 Forbidden",
-                    status = HttpStatus.FORBIDDEN,
-                ),
-                NonRetryableCatalogResponseTestCase(
-                    description = "Catalog returns 409 Conflict",
-                    status = HttpStatus.CONFLICT,
-                ),
-            )
-    }
-
-    @Test
-    fun `when catalog returns 404, then returns no book without retrying`() {
-        // Given
-        val expectedNoRetryRequestCount = 1
-
-        val response = MockResponse(HttpStatus.NOT_FOUND.value())
-        mockWebServer.enqueue(response)
-
-        // When
-        val result = bookClient.getBookByIsbn("not-found-isbn")
-
-        // Then
-        StepVerifier.create(result).verifyComplete()
-        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
-    }
-
-    @Test
-    fun `when catalog rejects request with client error, then returns no book without retrying`() {
-        // Given
-        val expectedNoRetryRequestCount = 1
-
-        val response = MockResponse(HttpStatus.BAD_REQUEST.value())
-        mockWebServer.enqueue(response)
-
-        // When
-        val result = bookClient.getBookByIsbn("invalid-isbn")
-
-        // Then
-        StepVerifier.create(result).verifyComplete()
-        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
     }
 
     @Test
