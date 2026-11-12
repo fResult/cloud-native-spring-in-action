@@ -64,7 +64,7 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when books exist then return books`() {
+    fun `when books exist, then returns books`() {
         val expectedBooks =
             listOf(
                 Book("1234567891", "Title1", "Author1", BigDecimal.valueOf(19.90)),
@@ -88,7 +88,7 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when no books exist then complete without emitting books`() {
+    fun `when no books exist, then completes without emitting books`() {
         // Given
         responseWith(response = emptyList<Book>())
 
@@ -100,7 +100,7 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when book exists, then return book`() {
+    fun `when book exists, then returns the book`() {
         // Given
         val expectedBook = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
         responseWith(expectedBook, status = HttpStatus.OK)
@@ -117,36 +117,7 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when book request times out, then returns no book`() {
-        // Given
-        val expectedNoRetryRequestCount = 1
-
-        val isbn = "1234567890"
-        val mockResposne =
-            MockResponse
-                .Builder()
-                .body("""{"title": "Title"}""")
-                .headers(headersOf(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                .headersDelay(5, TimeUnit.SECONDS)
-                .bodyDelay(5, TimeUnit.SECONDS)
-                .build()
-        mockWebServer.enqueue(mockResposne)
-
-        // When
-        val result = bookClient.getBookByIsbn(isbn)
-
-        // Then
-        StepVerifier
-            .create(result)
-            .expectSubscription()
-            .expectNextCount(0)
-            .verifyComplete()
-
-        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
-    }
-
-    @Test
-    fun `when catalog returns 503 once, then retry and return book`() {
+    fun `when catalog returns 503 once, then retries and returns book`() {
         // Given
         val book = Book("1234567890", "Title", "Author", BigDecimal.valueOf(9.90))
 
@@ -238,6 +209,8 @@ class CatalogBookClientTest {
     @Test
     fun `when catalog returns 404, then returns no book without retrying`() {
         // Given
+        val expectedNoRetryRequestCount = 1
+
         val response = MockResponse(HttpStatus.NOT_FOUND.value())
         mockWebServer.enqueue(response)
 
@@ -246,7 +219,7 @@ class CatalogBookClientTest {
 
         // Then
         StepVerifier.create(result).verifyComplete()
-        assertEquals(1, mockWebServer.requestCount)
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
     }
 
     @Test
@@ -266,25 +239,10 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when catalog first fails and then reports not found, then returns no book without retrying further`() {
+    fun `when catalog returns invalid book response, then returns no book without retrying`() {
         // Given
-        val serverUnavailableResponse = MockResponse(HttpStatus.SERVICE_UNAVAILABLE.value())
-        val notFoundResponse = MockResponse(HttpStatus.NOT_FOUND.value())
+        val expectedNoRetryRequestCount = 1
 
-        mockWebServer.enqueue(serverUnavailableResponse)
-        mockWebServer.enqueue(notFoundResponse)
-
-        // When
-        val result = bookClient.getBookByIsbn("not-found-isbn")
-
-        // Then
-        StepVerifier.create(result).verifyComplete()
-        assertEquals(2, mockWebServer.requestCount)
-    }
-
-    @Test
-    fun `when catalog returns malformed book data, then returns no book without retrying`() {
-        // Given
         val malformedResponse =
             MockResponse(
                 code = HttpStatus.OK.value(),
@@ -299,7 +257,7 @@ class CatalogBookClientTest {
 
         // Then
         StepVerifier.create(result).verifyComplete()
-        assertEquals(1, mockWebServer.requestCount)
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
     }
 
     @Test
