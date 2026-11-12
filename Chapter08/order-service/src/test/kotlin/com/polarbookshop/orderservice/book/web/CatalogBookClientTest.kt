@@ -109,20 +109,6 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when book doesn't exists, then returns no book`() {
-        // Given
-        val nonExistingBookIsbn = "not-found-isbn"
-        val mockResponse = MockResponse(HttpStatus.NOT_FOUND.value())
-        mockWebServer.enqueue(mockResponse)
-
-        // When
-        val notFoundBook = bookClient.getBookByIsbn(nonExistingBookIsbn)
-
-        // Then
-        StepVerifier.create(notFoundBook).expectNextCount(0).verifyComplete()
-    }
-
-    @Test
     fun `when book request times out, then returns no book`() {
         // Given
         val expectedNoRetryRequestCount = 1
@@ -210,7 +196,7 @@ class CatalogBookClientTest {
     @Test
     fun `when catalog responds before attempt timeout, then returns the book without retrying`() {
         // Given
-        val expectedNoRetryRequestCount = 1
+        val expectedRequestCount = 1
 
         val isbn = "1234567890"
         val expectedBook = Book(isbn, "Title", "Author", BigDecimal("9.90"))
@@ -222,7 +208,7 @@ class CatalogBookClientTest {
 
         // Then
         StepVerifier.create(result).expectNext(expectedBook).verifyComplete()
-        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+        assertEquals(expectedRequestCount, mockWebServer.requestCount)
     }
 
     @Test
@@ -242,9 +228,10 @@ class CatalogBookClientTest {
     }
 
     @Test
-    fun `when book doesn't exist, then do not retry`() {
+    fun `when catalog returns 404, then returns no book without retrying`() {
         // Given
-        mockWebServer.enqueue(MockResponse(HttpStatus.NOT_FOUND.value()))
+        val response = MockResponse(HttpStatus.NOT_FOUND.value())
+        mockWebServer.enqueue(response)
 
         // When
         val result = bookClient.getBookByIsbn("not-found-isbn")
