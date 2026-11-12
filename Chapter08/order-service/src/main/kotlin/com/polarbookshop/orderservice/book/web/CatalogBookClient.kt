@@ -32,7 +32,7 @@ class CatalogBookClient internal constructor(
             .retryWhen(transientRetry)
             .onErrorResume(Exception::class) { _ -> Mono.empty() }
 
-    fun isTransientFailure(ex: Throwable) =
+    private fun isTransientFailure(ex: Throwable) =
         when (ex) {
             is WebClientRequestException -> NestedExceptionUtils.getMostSpecificCause(ex) is ConnectException
             is WebClientResponseException -> ex.statusCode.is5xxServerError
