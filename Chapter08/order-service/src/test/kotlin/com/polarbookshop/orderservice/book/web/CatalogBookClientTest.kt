@@ -1,6 +1,7 @@
 package com.polarbookshop.orderservice.book.web
 
 import com.polarbookshop.orderservice.book.Book
+import com.polarbookshop.orderservice.book.web.fixture.NonRetryableCatalogResponseTestCase
 import com.polarbookshop.orderservice.config.BookHttpApi
 import com.polarbookshop.orderservice.config.CatalogServiceProperties
 import com.polarbookshop.orderservice.testsupport.http.delayedResponseWith
@@ -11,6 +12,8 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
 import okhttp3.Headers.Companion.headersOf
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -204,6 +207,49 @@ class CatalogBookClientTest {
         // Then
         StepVerifier.create(result).verifyComplete()
         assertEquals(expectedExhaustingRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    @ParameterizedTest(name = "when {0}, then returns no book without retrying")
+    @MethodSource("nonRetryableCatalogResponses")
+    fun `when catalog returns non-retryable client error, then returns no book without retrying`(
+        testCase: NonRetryableCatalogResponseTestCase,
+    ) {
+        // Given
+        val expectedNoRetryRequestCount = 1
+
+        val nonRetryableResponse = MockResponse(testCase.status.value())
+        mockWebServer.enqueue(nonRetryableResponse)
+
+        // When
+        val result = bookClient.getBookByIsbn("invalid-isbn")
+
+        // Then
+        StepVerifier.create(result).verifyComplete()
+        assertEquals(expectedNoRetryRequestCount, mockWebServer.requestCount)
+    }
+
+    companion object {
+        /** 404 is intentionally excluded because it has a dedicated business fallback test. */
+        @JvmStatic
+        private fun nonRetryableCatalogResponses() =
+            listOf(
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 400 Bad Request",
+                    status = HttpStatus.BAD_REQUEST,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 401 Unauthorized",
+                    status = HttpStatus.UNAUTHORIZED,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 403 Forbidden",
+                    status = HttpStatus.FORBIDDEN,
+                ),
+                NonRetryableCatalogResponseTestCase(
+                    description = "Catalog returns 409 Conflict",
+                    status = HttpStatus.CONFLICT,
+                ),
+            )
     }
 
     @Test
