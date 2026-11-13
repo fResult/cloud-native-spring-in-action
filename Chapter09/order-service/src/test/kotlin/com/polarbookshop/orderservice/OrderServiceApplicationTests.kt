@@ -9,12 +9,9 @@ import com.polarbookshop.orderservice.order.domain.OrderStatus
 import com.polarbookshop.orderservice.order.web.OrderRequest
 import io.mockk.bdd.given
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.flyway.autoconfigure.FlywayConnectionDetails
-import org.springframework.boot.r2dbc.autoconfigure.R2dbcConnectionDetails
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Import
@@ -33,26 +30,10 @@ import kotlin.test.fail
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceApplicationTests {
     @Autowired
-    private lateinit var flywayConnectionDetails: FlywayConnectionDetails
-
-    @Autowired
-    private lateinit var r2dbcConnectionDetails: R2dbcConnectionDetails
-
-    @Autowired
     private lateinit var webTestClient: WebTestClient
 
     @MockkBean
     private lateinit var bookClient: CatalogBookClient
-
-    @BeforeAll
-    fun setUp() {
-        // BlockHound.install()
-        println("r2dbc details: ${r2dbcConnectionDetails.connectionFactoryOptions}")
-        println("flyway uname: ${flywayConnectionDetails.username}")
-        println("flyway password: ${flywayConnectionDetails.password}")
-        println("flyway jdbc url: ${flywayConnectionDetails.jdbcUrl}")
-        println("flyway driver: ${flywayConnectionDetails.driverClassName}")
-    }
 
     @Test
     fun `when get orders, then returns orders`() {

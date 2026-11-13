@@ -15,7 +15,6 @@ public class BookService {
   }
 
   public Book viewBookDetails(String isbn) {
-    // Try.run(() -> Thread.sleep(Duration.ofSeconds(7)));
     return bookRepository.findByIsbn(isbn).getOrElseThrow(() -> new BookNotFoundException(isbn));
   }
 

@@ -100,21 +100,12 @@ tasks.withType<BootBuildImage> {
         java.toolchain.languageVersion
             .get()
             .toString()
-//    val currentJavaVersion =
-//        java.toolchain.languageVersion
-//            .get()
-//            .toString()
-//    val jvmVersion = if (currentJavaVersion == "26" || tiltDev) "27" else currentJavaVersion
     if (tiltDev) {
         builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
         buildpacks = listOf("docker://paketobuildpacks/java:latest")
         runImage = "catalog-service-tilt-run:local"
         // Keep the locally built dev run image but pull missing builder/buildpack images.
         pullPolicy = PullPolicy.IF_NOT_PRESENT
-    } else {
-        builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
-        buildpacks = listOf("docker://paketobuildpacks/java:latest")
-        pullPolicy = PullPolicy.ALWAYS
     }
     environment =
         mapOf(
