@@ -29,6 +29,7 @@ import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import java.net.ConnectException
 import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -190,7 +191,7 @@ class CatalogBookClientTest {
         }
 
         @Test
-        fun `when Catalog arrives before attempt timeout, then returns the book without retrying`() {
+        fun `when Catalog responds before attempt timeout, then returns the book without retrying`() {
             // Given
             val expectedRequestCount = 1
 

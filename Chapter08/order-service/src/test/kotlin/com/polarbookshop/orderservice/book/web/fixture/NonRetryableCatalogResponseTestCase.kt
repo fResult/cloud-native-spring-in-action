@@ -2,6 +2,11 @@ package com.polarbookshop.orderservice.book.web.fixture
 
 import org.springframework.http.HttpStatus
 
+/**
+ * Catalog client errors that must complete without retrying
+ *
+ * 404 is intentionally excluded because it has a dedicated business fallback and test case.
+ */
 enum class NonRetryableCatalogResponseTestCase(
     private val description: String,
     val status: HttpStatus,
