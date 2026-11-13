@@ -1,0 +1,5 @@
+polar:
+  catalog-service:
+    uri: http://localhost:9001
+    connect-timeout: 2s
+    response-timeout: 2s

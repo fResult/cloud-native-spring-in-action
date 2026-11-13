@@ -1,0 +1,187 @@
+import org.springframework.boot.buildpack.platform.build.PullPolicy
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
+plugins {
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.spring") version "2.3.21"
+    id("org.springframework.boot") version "4.1.2"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("com.diffplug.spotless") version "8.11.0"
+}
+
+group = "com.polarbookshop"
+version = "0.0.1-SNAPSHOT"
+description = "Functionality for purchasing books"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*
+ * === Temporary security overrides ===
+ * Override Spring portfolio to address vulnerabilities reported by Grype.
+ * TODO: Remove these overrides once Spring Boot 4.1.3 OR 4.2.0 is released
+ */
+extra["scramVersion"] = "3.4"
+
+// === Explicit dependency versions ===
+extra["mockkVersion"] = "1.14.11"
+extra["springMockKVersion"] = "5.0.1"
+extra["blockHoundVersion"] = "1.0.18.RELEASE"
+extra["jnaVersion"] = "5.19.1"
+
+// === Explicit BOM selection ===
+extra["springCloudVersion"] = "2025.1.4"
+extra["okhttp.version"] = "5.5.1"
+
+val tiltDev = providers.gradleProperty("tiltDev").isPresent
+
+dependencies {
+    constraints {
+        runtimeOnly("com.ongres.scram:scram-client:${property("scramVersion")}") {
+            because("Fix GHSA-p9jg-fcr6-3mhf (CVE-2026-53712)")
+        }
+
+        runtimeOnly("com.ongres.scram:scram-common:${property("scramVersion")}") {
+            because("Fix GHSA-p9jg-fcr6-3mhf (CVE-2026-53712)")
+        }
+    }
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-webclient")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
+    implementation("org.springframework.retry:spring-retry")
+    implementation("io.projectreactor:reactor-tools")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.springframework:spring-jdbc")
+    implementation("tools.jackson.module:jackson-module-kotlin")
+    if (tiltDev) {
+        implementation("net.java.dev.jna:jna:${property("jnaVersion")}")
+    }
+
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.postgresql:r2dbc-postgresql")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-r2dbc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.testcontainers:testcontainers-r2dbc")
+    testImplementation("com.squareup.okhttp3:mockwebserver3-junit5")
+    testImplementation("io.projectreactor.tools:blockhound:${property("blockHoundVersion")}")
+    testImplementation("io.mockk:mockk-jvm:${property("mockkVersion")}")
+    testImplementation("io.mockk:mockk-bdd:${property("mockkVersion")}")
+    testImplementation("com.ninja-squad:springmockk:${property("springMockKVersion")}")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
+}
+
+spotless {
+    kotlin {
+        ktlint()
+
+        target("**/*.kt")
+        targetExclude("**/build/**")
+
+        trimTrailingWhitespace()
+        leadingTabsToSpaces()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        ktlint()
+        target("*.gradle.kts", "settings.gradle.kts")
+    }
+
+    format("yaml") {
+        target("src/**/*.yaml", "src/**/*.yml")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.withType<BootBuildImage> {
+    imageName = "${project.name}:${project.version}"
+    val jvmVersion =
+        java.toolchain.languageVersion
+            .get()
+            .toString()
+//    val currentJavaVersion =
+//        java.toolchain.languageVersion
+//            .get()
+//            .toString()
+//    val jvmVersion = if (currentJavaVersion == "26" || tiltDev) "27" else currentJavaVersion
+    if (tiltDev) {
+        builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
+        buildpacks = listOf("docker://paketobuildpacks/java:latest")
+        runImage = "order-service-tilt-run:local"
+        // Keep the locally built dev run image but pull missing builder/buildpack images.
+        pullPolicy = PullPolicy.IF_NOT_PRESENT
+    } else {
+        builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"
+        buildpacks = listOf("docker://paketobuildpacks/java:latest")
+        pullPolicy = PullPolicy.ALWAYS
+    }
+    environment =
+        mapOf(
+            "BP_JVM_VERSION" to jvmVersion,
+            "BP_LIVE_RELOAD_ENABLED" to if (tiltDev) "true" else "false",
+        )
+
+    docker {
+        publishRegistry {
+            username = providers.gradleProperty("registryUsername")
+            password = providers.gradleProperty("registryToken")
+            url = providers.gradleProperty("registryUrl")
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+
+    // Tests use local application properties and provision PostgreSQL only.
+    // Disable the Config Client because this test suite does not provision a Config Server.
+    systemProperty("spring.cloud.config.enabled", "false")
+
+    // BlockHound configuration for Java 13+
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
+    }
+}

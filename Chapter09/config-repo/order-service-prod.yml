@@ -1,0 +1,5 @@
+polar:
+  catalog-service:
+    uri: http://catalog-service
+    connect-timeout: 3s
+    response-timeout: 3s
