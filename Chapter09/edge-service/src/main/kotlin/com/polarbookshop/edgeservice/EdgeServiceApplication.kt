@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class EdgeServiceApplication
 
 fun main(args: Array<String>) {
-	runApplication<EdgeServiceApplication>(*args)
+    runApplication<EdgeServiceApplication>(*args)
 }
