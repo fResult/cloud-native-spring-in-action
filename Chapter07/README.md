@@ -337,3 +337,19 @@ minikube stop --profile polar
 > The safer alternative is to delete one reviewed image at a time: `docker rmi <image_name|image_id>` or `minikube image rm <image_name|image_id> --profile polar`.
 
 [org-config-repo]: https://github.com/fResult-PolarBookshop/config-repo
+
+---
+
+<footer>
+  <div align=center>
+    <br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>.<br><br>
+  </div>
+
+  <p align=center>
+    [This Space Intentionally Left Blank]
+  </p>
+
+  <p align=center>
+    The bottom of every page is padded so readers can maintain a consistent eyeline.
+  </p>
+</footer>
