@@ -8,6 +8,7 @@ plugins {
 
 group = "com.polarbookshop"
 version = "0.0.1-SNAPSHOT"
+description = "API gateway and cross-cutting concerns."
 
 java {
     toolchain {
@@ -23,10 +24,14 @@ repositories {
 extra["springCloudVersion"] = "2025.1.4"
 
 dependencies {
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webmvc")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
