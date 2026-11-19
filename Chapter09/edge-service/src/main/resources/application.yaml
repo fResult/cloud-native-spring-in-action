@@ -18,10 +18,19 @@ spring:
               uri: ${CATALOG_SERVICE_URI:http://localhost:9001}/books
               predicates:
                 - Path=/books/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: catalogCircuitBreaker
+                    fallbackUri: forward:/catalog-fallback
             - id: order-route
               uri: ${ORDER_SERVICE_URI:http://localhost:9002}/orders
               predicates:
                 - Path=/orders/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: orderCircuitBreaker
           httpclient:
             connect-timeout: 2000
             response-timeout: 5s
