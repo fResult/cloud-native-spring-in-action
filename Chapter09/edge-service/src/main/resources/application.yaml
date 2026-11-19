@@ -53,6 +53,13 @@ spring:
                 jitter:
                   randomFactor: 0.5
 resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        permitted-number-of-calls-in-half-open-state: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
   timelimiter:
     configs:
       default:
