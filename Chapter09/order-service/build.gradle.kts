@@ -131,7 +131,7 @@ spotless {
 }
 
 tasks.withType<BootBuildImage> {
-    imageName = "${project.name}:${project.version}"
+    imageName = "${projectDir.name}:${project.version}"
     val jvmVersion =
         java.toolchain.languageVersion
             .get()
