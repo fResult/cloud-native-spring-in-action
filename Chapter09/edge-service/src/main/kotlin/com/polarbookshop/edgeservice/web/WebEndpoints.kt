@@ -14,6 +14,6 @@ class WebEndpoints {
     fun routers() =
         coRouter {
             GET("/catalog-fallback") { _ -> ServerResponse.ok().bodyValueAndAwait("FALLBACK") }
-            POST("/catalog-fallback") { _ -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).buildAndAwait() }
+            POST("/catalog-fallback") { _ -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE).buildAndAwait() }
         }
 }
