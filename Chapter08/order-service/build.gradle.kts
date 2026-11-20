@@ -4,7 +4,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
-    id("org.springframework.boot") version "4.1.2"
+    id("org.springframework.boot") version "4.2.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "8.11.0"
 }
@@ -26,12 +26,12 @@ repositories {
 /*
  * === Temporary security overrides ===
  * Override Spring portfolio to address vulnerabilities reported by Grype.
- * TODO: Remove these overrides once Spring Boot 4.1.3 OR 4.2.0 is released
+ * TODO: Remove these overrides once Spring Boot 4.2.1 OR 4.3.0 is released
  */
 extra["scramVersion"] = "3.4"
 
 // === Explicit dependency versions ===
-extra["mockkVersion"] = "1.14.11"
+extra["mockkVersion"] = "1.14.12"
 extra["springMockKVersion"] = "5.0.1"
 extra["blockHoundVersion"] = "1.0.18.RELEASE"
 extra["jnaVersion"] = "5.19.1"
