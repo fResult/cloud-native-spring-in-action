@@ -3,7 +3,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     java
-    id("org.springframework.boot") version "4.1.2"
+    id("org.springframework.boot") version "4.2.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "8.11.0"
 }
@@ -23,7 +23,7 @@ repositories {
 }
 
 // === Explicit BOM selection ===
-extra["springCloudVersion"] = "2025.1.4"
+extra["springCloudVersion"] = "2026.0.0"
 
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-config-server")
