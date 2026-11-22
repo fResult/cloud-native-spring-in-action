@@ -21,7 +21,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 /*
@@ -38,7 +37,7 @@ extra["blockHoundVersion"] = "1.0.18.RELEASE"
 extra["jnaVersion"] = "5.19.1"
 
 // === Explicit BOM selection ===
-extra["springCloudVersion"] = "2026.0.0-SNAPSHOT"
+extra["springCloudVersion"] = "2026.0.0"
 extra["okhttp.version"] = "5.5.1"
 
 val tiltDev = providers.gradleProperty("tiltDev").isPresent
