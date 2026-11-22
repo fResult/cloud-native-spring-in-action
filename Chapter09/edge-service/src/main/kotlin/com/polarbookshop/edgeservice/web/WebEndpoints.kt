@@ -33,20 +33,22 @@ class WebEndpoints {
                         "X-Fallback-Reason",
                         exception?.javaClass?.simpleName ?: httpStatus.name,
                     ).bodyValueAndAwait("")
+            } else {
+                val detail =
+                    ProblemDetail
+                        .forStatusAndDetail(httpStatus, "Catalog Service is temporarily unavailable. Please try again later.")
+                        .apply {
+                            type = request.uri()
+                            setProperty("timestamp", Instant.now())
+                            setProperty("cause", exception?.javaClass?.simpleName ?: "Unknown")
+                        }
+
+                ServerResponse
+                    .status(httpStatus)
+                    .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                    .bodyValueAndAwait(detail)
             }
+        }
 
-            val detail =
-                ProblemDetail
-                    .forStatusAndDetail(httpStatus, "Catalog Service is temporarily unavailable. Please try again later.")
-                    .apply {
-                        type = request.uri()
-                        setProperty("timestamp", Instant.now())
-                        setProperty("cause", exception?.javaClass?.simpleName ?: "Unknown")
-                    }
-
-            ServerResponse
-                .status(httpStatus)
-                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                .bodyValueAndAwait(detail)
         }
 }
