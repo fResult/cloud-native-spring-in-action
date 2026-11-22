@@ -1,5 +1,6 @@
 package com.polarbookshop.edgeservice.web
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,7 +11,9 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.bodyValueAndAwait
 import org.springframework.web.reactive.function.server.coRouter
+import java.net.ConnectException
 import java.time.Instant
+import java.util.concurrent.TimeoutException
 
 @Configuration
 class WebEndpoints {
@@ -29,10 +32,8 @@ class WebEndpoints {
             if (isReadOperation) {
                 ServerResponse
                     .ok()
-                    .header(
-                        "X-Fallback-Reason",
-                        exception?.javaClass?.simpleName ?: httpStatus.name,
-                    ).bodyValueAndAwait("")
+                    .header("X-Fallback-Reason", toReason(exception))
+                    .bodyValueAndAwait(emptyList<Any>())
             } else {
                 val detail =
                     ProblemDetail
@@ -40,7 +41,7 @@ class WebEndpoints {
                         .apply {
                             type = request.uri()
                             setProperty("timestamp", Instant.now())
-                            setProperty("cause", exception?.javaClass?.simpleName ?: "Unknown")
+                            setProperty("cause", toReason(exception))
                         }
 
                 ServerResponse
@@ -50,5 +51,11 @@ class WebEndpoints {
             }
         }
 
+    private fun toReason(exception: Throwable?) =
+        when (exception) {
+            is CallNotPermittedException -> "CIRCUIT_OPEN"
+            is TimeoutException -> "CATALOG_TIMEOUT"
+            is ConnectException -> "CONNECTION_REFUSED"
+            else -> "SERVICE_UNAVAILABLE"
         }
 }
