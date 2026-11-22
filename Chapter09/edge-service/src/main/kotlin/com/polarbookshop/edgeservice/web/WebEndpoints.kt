@@ -4,6 +4,7 @@ import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -43,6 +44,9 @@ class WebEndpoints {
                         setProperty("cause", exception?.javaClass?.simpleName ?: "Unknown")
                     }
 
-            ServerResponse.status(httpStatus).bodyValueAndAwait(detail)
+            ServerResponse
+                .status(httpStatus)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyValueAndAwait(detail)
         }
 }
