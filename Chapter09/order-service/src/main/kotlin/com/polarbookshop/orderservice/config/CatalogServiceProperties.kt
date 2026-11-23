@@ -11,7 +11,7 @@ import kotlin.time.toJavaDuration
 @Validated
 @ConfigurationProperties(prefix = "polar.catalog-service")
 class CatalogServiceProperties {
-    @field:NotNull
+    @NotNull
     lateinit var uri: URI
     var connectTimeout: Duration = 3.seconds.toJavaDuration()
     var responseTimeout: Duration = 5.seconds.toJavaDuration()

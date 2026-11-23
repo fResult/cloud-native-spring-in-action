@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class CatalogBookClientTest {
-    @field:StartStop
+    @StartStop
     private val mockWebServer: MockWebServer = MockWebServer()
 
     private val mapper = ObjectMapper()
