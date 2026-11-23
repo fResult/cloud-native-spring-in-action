@@ -42,7 +42,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.springframework.retry:spring-retry")
     compileOnly("org.projectlombok:lombok")
-    implementation("io.vavr:vavr:1.0.1")
+    implementation("io.vavr:vavr:1.1.0")
     implementation("io.vavr:vavr-jackson:1.0.0")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

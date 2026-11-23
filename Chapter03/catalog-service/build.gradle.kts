@@ -23,7 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     compileOnly("org.projectlombok:lombok")
-    implementation("io.vavr:vavr:1.0.1")
+    implementation("io.vavr:vavr:1.1.0")
     implementation("io.vavr:vavr-jackson:1.0.0")
     annotationProcessor("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

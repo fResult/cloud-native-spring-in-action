@@ -36,7 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     compileOnly("org.projectlombok:lombok")
-    implementation("io.vavr:vavr:1.0.1")
+    implementation("io.vavr:vavr:1.1.0")
     implementation("io.vavr:vavr-jackson:1.0.0")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
