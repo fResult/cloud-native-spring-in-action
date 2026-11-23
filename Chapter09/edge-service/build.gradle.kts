@@ -20,8 +20,13 @@ repositories {
     mavenCentral()
 }
 
+// === Explicit dependency versions ===
+extra["mockkVersion"] = "1.14.12"
+extra["springMockKVersion"] = "5.0.1"
+
 // === Explicit BOM selection ===
 extra["springCloudVersion"] = "2026.0.0"
+extra["okhttp.version"] = "5.5.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -38,6 +43,10 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    testImplementation("com.squareup.okhttp3:mockwebserver3-junit5")
+    testImplementation("io.mockk:mockk-jvm:${property("mockkVersion")}")
+    testImplementation("io.mockk:mockk-bdd:${property("mockkVersion")}")
+    testImplementation("com.ninja-squad:springmockk:${property("springMockKVersion")}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
