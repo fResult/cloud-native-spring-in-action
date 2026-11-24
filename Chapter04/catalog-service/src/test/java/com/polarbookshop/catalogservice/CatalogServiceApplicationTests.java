@@ -15,11 +15,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CatalogServiceApplicationTests {
-  private WebTestClient webTestClient;
+  private WebTestClient webClient;
 
   @BeforeEach
   void setUp(WebApplicationContext webApplicationContext) {
-    webTestClient =
+    webClient =
         MockMvcWebTestClient.bindToApplicationContext(webApplicationContext).build();
   }
 
@@ -29,7 +29,7 @@ class CatalogServiceApplicationTests {
     val expectedBook = new Book("1231231231", "Title", "Author", BigDecimal.TEN);
 
     // When
-    val response = webTestClient.post().uri("/books").bodyValue(expectedBook).exchange();
+    val response = webClient.post().uri("/books").bodyValue(expectedBook).exchange();
 
     // Then
     response.expectStatus().isCreated().expectBody(Book.class).value(actualBook -> {

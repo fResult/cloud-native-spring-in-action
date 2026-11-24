@@ -23,20 +23,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Import(TestContainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CatalogServiceApplicationTests {
-  private WebTestClient webTestClient;
+  private WebTestClient webClient;
 
   @BeforeEach
   void setUp(WebApplicationContext webApplicationContext) {
-    webTestClient =
+    webClient =
         MockMvcWebTestClient.bindToApplicationContext(webApplicationContext).build();
   }
 
   private ResponseSpec postBookCreationFor(Book book) {
-    return webTestClient.post().uri("/books").bodyValue(book).exchange();
+    return webClient.post().uri("/books").bodyValue(book).exchange();
   }
 
   private ResponseSpec getBookRetrievingFor(String isbn) {
-    return webTestClient.get().uri("/books/{isbn}", isbn).exchange();
+    return webClient.get().uri("/books/{isbn}", isbn).exchange();
   }
 
   @Test
@@ -99,11 +99,8 @@ class CatalogServiceApplicationTests {
     val bookToUpdate = createdBook.withPrice(BigDecimal.valueOf(7.95));
 
     // When
-    val response = webTestClient
-        .put()
-        .uri("/books/{isbn}", bookIsbn)
-        .bodyValue(bookToUpdate)
-        .exchange();
+    val response =
+        webClient.put().uri("/books/{isbn}", bookIsbn).bodyValue(bookToUpdate).exchange();
 
     // Then
     response.expectStatus().isOk().expectBody(Book.class).value(actualBook -> {
@@ -122,7 +119,7 @@ class CatalogServiceApplicationTests {
     postBookCreationFor(bookToCreate).expectStatus().isCreated();
 
     // When
-    val response = webTestClient.delete().uri("/books/{isbn}", bookIsbn).exchange();
+    val response = webClient.delete().uri("/books/{isbn}", bookIsbn).exchange();
 
     // Then
     response.expectStatus().isNoContent();
