@@ -30,7 +30,7 @@ import kotlin.test.fail
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceApplicationTests {
     @Autowired
-    private lateinit var webTestClient: WebTestClient
+    private lateinit var webClient: WebTestClient
 
     @MockkBean
     private lateinit var bookClient: CatalogBookClient
@@ -46,7 +46,7 @@ class OrderServiceApplicationTests {
 
         // When
         val expectedOrder =
-            webTestClient
+            webClient
                 .post()
                 .uri("/orders")
                 .bodyValue(orderRequest)
@@ -58,7 +58,7 @@ class OrderServiceApplicationTests {
                 .responseBody
                 ?: fail("Expected the created order to be returned")
 
-        val orderResponse = webTestClient.get().uri("/orders").exchange()
+        val orderResponse = webClient.get().uri("/orders").exchange()
 
         // Then
         val orders =
@@ -85,7 +85,7 @@ class OrderServiceApplicationTests {
 
         // When
         val createdOrderResponse =
-            webTestClient
+            webClient
                 .post()
                 .uri("/orders")
                 .bodyValue(orderRequest)
@@ -117,7 +117,7 @@ class OrderServiceApplicationTests {
 
         // When
         val createdOrderResponse =
-            webTestClient
+            webClient
                 .post()
                 .uri("/orders")
                 .bodyValue(orderRequest)
