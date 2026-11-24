@@ -7,12 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
+import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 @Tag("integration")
-@Import(TestcontainersConfiguration::class)
+@Import(TestcontainersConfiguration::class, GatewayMockConfiguration::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RateLimitingIntegrationTest {
     @LocalServerPort
@@ -49,6 +50,34 @@ class RateLimitingIntegrationTest {
                     .expectHeader()
                     .exists(rateLimitRemainingHeader)
             }
+        }
+    }
+
+    @Nested
+    inner class GivenTrafficExceedingBurstCapacity {
+        @Test
+        fun `when requests exceed burst limit, then throttles excess traffic with 429 Too Many Requests`() {
+            // Given
+            val burstCapacity = 2
+            val rateLimitRemainingHeader = "X-RateLimit-Remaining"
+            repeat(burstCapacity) {
+                webClient
+                    .get()
+                    .uri("/books")
+                    .exchange()
+                    .expectStatus()
+                    .isOk
+            }
+
+            // When
+            val excessRequestResponse = webClient.get().uri("/books").exchange()
+
+            // Then
+            excessRequestResponse
+                .expectStatus()
+                .isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+                .expectHeader()
+                .valueEquals(rateLimitRemainingHeader, "0")
         }
     }
 }
