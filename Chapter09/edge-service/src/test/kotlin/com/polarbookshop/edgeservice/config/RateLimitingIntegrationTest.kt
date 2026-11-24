@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 @Tag("integration")
 @Import(TestcontainersConfiguration::class, GatewayMockConfiguration::class)
@@ -82,5 +83,50 @@ class RateLimitingIntegrationTest {
                 .expectHeader()
                 .valueEquals(rateLimitRemainingHeader, expectedRateLimitingRemaining)
         }
+
+        @Test
+        fun `when throttled client waits for token replenish, then accepts subsequent requests`() {
+            // Given
+            val expectedRemainingTokensAfterReplenish = setOf(0, 1)
+
+            val targetUri = "/books"
+            val burstCapacity = 2
+            val rateLimitRemainingHeader = "X-RateLimit-Remaining"
+            repeat(burstCapacity) {
+                webClient
+                    .get()
+                    .uri(targetUri)
+                    .exchange()
+                    .expectStatus()
+                    .isOk
+            }
+
+            // When
+            Thread.sleep(1000)
+            val subsequentRequestResponse = webClient.get().uri(targetUri).exchange()
+
+            // Then
+            subsequentRequestResponse
+                .expectStatus()
+                .isOk
+                .expectHeader()
+                .exists(rateLimitRemainingHeader)
+                .expectHeader()
+                .value(rateLimitRemainingHeader, assertWithIn(expectedRemainingTokensAfterReplenish))
+        }
+
+        private fun assertWithIn(expectedTokens: Set<Int>): (String) -> Unit =
+            { remainingTokens ->
+                val actualRemainingTokens = remainingTokens.toInt()
+                val acceptableTokenRange = expectedTokens.joinToString(" and ")
+
+                assertTrue(
+                    actualRemainingTokens in expectedTokens,
+                    """
+                    Expected remaining tokens to be one of $expectedTokens, but was $actualRemainingTokens.
+                    Remaining tokens may vary between $acceptableTokenRange due to execution time drift against Redis epoch seconds.
+                    """.trimIndent(),
+                )
+            }
     }
 }
