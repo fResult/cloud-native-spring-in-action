@@ -58,6 +58,9 @@ class RateLimitingIntegrationTest {
         @Test
         fun `when requests exceed burst limit, then throttles excess traffic with 429 Too Many Requests`() {
             // Given
+            val expectedStatus = HttpStatus.TOO_MANY_REQUESTS
+            val expectedRateLimitingRemaining = "0"
+
             val burstCapacity = 2
             val rateLimitRemainingHeader = "X-RateLimit-Remaining"
             repeat(burstCapacity) {
@@ -75,9 +78,9 @@ class RateLimitingIntegrationTest {
             // Then
             excessRequestResponse
                 .expectStatus()
-                .isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+                .isEqualTo(expectedStatus)
                 .expectHeader()
-                .valueEquals(rateLimitRemainingHeader, "0")
+                .valueEquals(rateLimitRemainingHeader, expectedRateLimitingRemaining)
         }
     }
 }
