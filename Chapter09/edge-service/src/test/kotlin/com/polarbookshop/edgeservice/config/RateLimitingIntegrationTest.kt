@@ -16,16 +16,15 @@ import kotlin.test.assertTrue
 @Tag("integration")
 @Import(TestcontainersConfiguration::class, GatewayMockConfiguration::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RateLimitingIntegrationTest {
-    @LocalServerPort
-    private val port = 0
-
+class RateLimitingIntegrationTest(
+    @param:Autowired
+    private val redisTemplate: ReactiveStringRedisTemplate,
+    @param:LocalServerPort
+    private val port: Int = 0,
+) {
     private val webClient: WebTestClient by lazy {
         WebTestClient.bindToServer().baseUrl("http://localhost:$port").build()
     }
-
-    @Autowired
-    private lateinit var redisTemplate: ReactiveStringRedisTemplate
 
     @BeforeTest
     fun resetRateLimiterTokens() {
