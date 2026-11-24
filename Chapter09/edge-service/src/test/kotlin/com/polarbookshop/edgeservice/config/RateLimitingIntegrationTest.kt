@@ -35,7 +35,7 @@ class RateLimitingIntegrationTest {
     @Nested
     inner class GivenTrafficWithinBurstCapacity {
         @Test
-        fun `when requests do not exceed client traffic within allowed capacity`() {
+        fun `when requests do not exceed burst capacity, then accepts all traffic with 200 OK`() {
             // Given
             val burstCapacity = 2
             val rateLimitRemainingHeader = "X-RateLimit-Remaining"
@@ -112,10 +112,10 @@ class RateLimitingIntegrationTest {
                 .expectHeader()
                 .exists(rateLimitRemainingHeader)
                 .expectHeader()
-                .value(rateLimitRemainingHeader, assertWithIn(expectedRemainingTokensAfterReplenish))
+                .value(rateLimitRemainingHeader, assertWithin(expectedRemainingTokensAfterReplenish))
         }
 
-        private fun assertWithIn(expectedTokens: Set<Int>): (String) -> Unit =
+        private fun assertWithin(expectedTokens: Set<Int>): (String) -> Unit =
             { remainingTokens ->
                 val actualRemainingTokens = remainingTokens.toInt()
                 val acceptableTokenRange = expectedTokens.joinToString(" and ")

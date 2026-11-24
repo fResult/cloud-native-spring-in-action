@@ -13,7 +13,7 @@ class RateLimitingConfigurationTest {
     @Nested
     inner class GivenUnauthenticatedRequest {
         @Test
-        fun `when reolve client identity, then identifies client as anonymous`() {
+        fun `when resolves client identity, then identifies client as anonymous`() {
             // Given
             val expectedClientIdentity = "anonymous"
             val incomingRequest = requestTo("/books")
