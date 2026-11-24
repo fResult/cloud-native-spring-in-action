@@ -42,8 +42,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter:
-                  replenishRate: 10
-                  burstCapacity: 20
+                  replenishRate: ${RATE_LIMITER_REPLENISH_RATE:10}
+                  burstCapacity: ${RATE_LIMITER_BURST_CAPACITY:20}
                   requestedTokens: 1
             - name: Retry
               args:
