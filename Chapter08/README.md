@@ -17,7 +17,7 @@ Original source code: [Thomas Vitale's Chapter 8 final project](https://github.c
 > - **Order Service is written in Kotlin**; Catalog Service and Config Service remain Java.
 > - The Catalog client is a declarative **HTTP Interface** (`@HttpExchange`) backed by `WebClient` through `WebClientAdapter` and `HttpServiceProxyFactory`. The book calls `WebClient` directly.
 > - Tests use **OkHttp `mockwebserver3`** and **MockK/SpringMockK**. BlockHound is available on the test classpath.
-> - The stack targets **Spring Boot 4.1** and **Spring Cloud 2025.1**, which use Jackson 3 (`tools.jackson.*`).
+> - The stack targets **Spring Boot 4.2.0** and **Spring Cloud 2026.0.0**, which use Jackson 3 (`tools.jackson.*`).
 
 ---
 

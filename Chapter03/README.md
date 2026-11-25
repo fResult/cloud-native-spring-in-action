@@ -129,7 +129,7 @@ Calculating JVM memory based on 11102852K available memory
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
 
- :: Spring Boot ::                (v4.1.0)
+ :: Spring Boot ::                (v4.2.0)
 
 ...
 2026-07-11T18:02:14.017Z  INFO 1 --- [catalog-service] [           main] c.p.c.CatalogServiceApplication          : Started CatalogServiceApplication in 0.841 seconds (process running for 1.028)
