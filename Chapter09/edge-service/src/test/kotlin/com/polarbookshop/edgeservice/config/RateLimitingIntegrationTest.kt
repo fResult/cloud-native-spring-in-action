@@ -62,18 +62,20 @@ class RateLimitingIntegrationTest(
             val expectedRateLimitingRemaining = "0"
 
             val burstCapacity = 2
+            val targetUri = "/books"
             val rateLimitRemainingHeader = "X-RateLimit-Remaining"
+
             repeat(burstCapacity) {
                 webClient
                     .get()
-                    .uri("/books")
+                    .uri(targetUri)
                     .exchange()
                     .expectStatus()
                     .isOk
             }
 
             // When
-            val excessRequestResponse = webClient.get().uri("/books").exchange()
+            val excessRequestResponse = webClient.get().uri(targetUri).exchange()
 
             // Then
             excessRequestResponse
@@ -88,9 +90,10 @@ class RateLimitingIntegrationTest(
             // Given
             val expectedRemainingTokensAfterReplenish = setOf(0, 1)
 
-            val targetUri = "/books"
             val burstCapacity = 2
+            val targetUri = "/books"
             val rateLimitRemainingHeader = "X-RateLimit-Remaining"
+
             repeat(burstCapacity) {
                 webClient
                     .get()
