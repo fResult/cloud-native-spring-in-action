@@ -96,5 +96,29 @@ class CircuitBreakerIntegrationTest(
                 .expectBodyList<Any>()
                 .hasSize(0)
         }
+
+        @Test
+        fun `when catalog-service exceeds timeout, then returns empty list with CATALOG_TIMEOUT header`() {
+            // Given
+            val expectedFallbackReason = "CATALOG_TIMEOUT"
+            val mockSlowResponse =
+                MockResponse
+                    .Builder()
+                    .headersDelay(6, TimeUnit.SECONDS)
+                    .code(HttpStatus.OK.value())
+                    .body("[]")
+                    .build()
+            repeat(4) { mockCatalogServer.enqueue(mockSlowResponse) }
+
+            // When
+            val response = webClient.get().uri("/books").exchange()
+
+            // Then
+            response
+                .expectStatus()
+                .isOk
+                .expectHeader()
+                .valueEquals("X-Fallback-Reason", expectedFallbackReason)
+        }
     }
 }
