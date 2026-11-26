@@ -48,7 +48,7 @@ class CircuitBreakerIntegrationTest(
     @BeforeTest
     fun setUp() {
         circuitBreakerRegistry.circuitBreaker("catalogCircuitBreaker").reset()
-        mockOrderServer.dispatcher = QueueDispatcher()
+        mockCatalogServer.dispatcher = QueueDispatcher()
     }
 
     private fun midCatalogRepsonseSocketDrop(burstCount: Int = 4) {
@@ -139,6 +139,25 @@ class CircuitBreakerIntegrationTest(
                 .expectHeader()
                 .valueEquals("X-Fallback-Reason", expectedFallbackReason)
                 .expectBodyList<Any>().hasSize(0)
+        }
+
+        @Test
+        fun `when catalog-service closes connection, then return empty list with 200 OK`() {
+            // Given
+            val expectedFallbackReason = "CATALOG_TIMEOUT"
+            slowCatalogResponse(delaySeconds = 6)
+
+            // When
+            val response = webClient.get().uri("/books").exchange()
+
+            // Then
+            response
+                .expectStatus()
+                .isOk
+                .expectHeader()
+                .valueEquals("X-Fallback-Reason", expectedFallbackReason)
+                .expectBodyList<Any>()
+                .hasSize(0)
         }
     }
 }
