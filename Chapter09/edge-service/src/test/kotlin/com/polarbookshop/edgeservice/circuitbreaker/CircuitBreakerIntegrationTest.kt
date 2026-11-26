@@ -35,6 +35,8 @@ class CircuitBreakerIntegrationTest(
     @param:LocalServerPort
     private val port: Int = 0,
 ) {
+    private val catalogBreaker = circuitBreakerRegistry.circuitBreaker("catalogCircuitBreaker")
+
     private val webClient: WebTestClient by lazy {
         WebTestClient
             .bindToServer()
@@ -119,6 +121,24 @@ class CircuitBreakerIntegrationTest(
                 .isOk
                 .expectHeader()
                 .valueEquals("X-Fallback-Reason", expectedFallbackReason)
+        }
+
+        @Test
+        fun `when catalog-service circuit is forced open, then short circuit immediately with CIRCUIT_OPEN reason`() {
+            // Given
+            val expectedFallbackReason = "CIRCUIT_OPEN"
+            catalogBreaker.transitionToOpenState()
+
+            // When
+            val response = webClient.get().uri("/books").exchange()
+
+            // Then
+            response
+                .expectStatus()
+                .isOk
+                .expectHeader()
+                .valueEquals("X-Fallback-Reason", expectedFallbackReason)
+                .expectBodyList<Any>().hasSize(0)
         }
     }
 }
