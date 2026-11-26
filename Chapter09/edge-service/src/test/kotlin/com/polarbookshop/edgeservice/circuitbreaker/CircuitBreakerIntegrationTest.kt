@@ -79,7 +79,7 @@ class CircuitBreakerIntegrationTest(
     }
 
     @Nested
-    inner class GivenCatalogServiceWithFallback {
+    inner class GivenCatalogBrowsing {
         @Test
         fun `when catalog-service drops connection mid response, then return empty list with SERVICE_UNAVAILABLE reason`() {
             // Given
@@ -138,7 +138,8 @@ class CircuitBreakerIntegrationTest(
                 .isOk
                 .expectHeader()
                 .valueEquals("X-Fallback-Reason", expectedFallbackReason)
-                .expectBodyList<Any>().hasSize(0)
+                .expectBodyList<Any>()
+                .hasSize(0)
         }
 
         @Test
