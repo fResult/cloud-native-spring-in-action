@@ -1,5 +1,6 @@
 package com.polarbookshop.edgeservice.config
 
+import com.polarbookshop.edgeservice.testsupport.http.httpUri
 import mockwebserver3.MockWebServer
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -18,7 +19,7 @@ class ServerMockConfiguration {
         mockCatalogServer: MockWebServer,
         mockOrderServer: MockWebServer,
     ) = DynamicPropertyRegistrar { registry ->
-        registry.add("CATALOG_SERVICE_URI") { mockCatalogServer.url("/books").toString().removeSuffix("/books/") }
-        registry.add("ORDER_SERVICE_URL") { mockOrderServer.url("/orders").toString().removeSuffix("/orders/") }
+        registry.add("CATALOG_SERVICE_URI", mockCatalogServer::httpUri)
+        registry.add("ORDER_SERVICE_URL", mockOrderServer::httpUri)
     }
 }
