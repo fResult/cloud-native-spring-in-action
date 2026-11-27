@@ -32,8 +32,8 @@ spring:
                   args:
                     name: orderCircuitBreaker
           httpclient:
-            connect-timeout: 2000
-            response-timeout: 5s
+            connect-timeout: ${GATEWAY_CONNECT_TIMEOUT:2000}
+            response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:5s}
             pool:
               type: elastic
               max-idle-time: 15s
@@ -52,8 +52,8 @@ spring:
                 series: SERVER_ERROR
                 exceptions: java.io.IOException, java.util.concurrent.TimeoutException
                 backoff:
-                  firstBackoff: 50ms
-                  maxBackoff: 500ms
+                  firstBackoff: ${RETRY_FIRST_BACKOFF:50ms}
+                  maxBackoff: ${RETRY_MAX_BACKOFF:500ms}
                   factor: 2
                   basedOnPreviousValue: false
                 jitter:
@@ -76,7 +76,7 @@ resilience4j:
   timelimiter:
     configs:
       default:
-        timeout-duration: 5s
+        timeout-duration: ${TIME_LIMITER_DEFAULT_TIMEOUT:5s}
 
 logging:
   level:
