@@ -69,14 +69,14 @@ class CircuitBreakerIntegrationTest(
     }
 
     private fun slowCatalogResponse(
-        delaySeconds: Long = 6,
+        delayMilliseconds: Long = 450,
         burstCount: Int = 4,
     ) {
         val delayedResponse =
             MockResponse
                 .Builder()
                 .code(HttpStatus.OK.value())
-                .headersDelay(delaySeconds, TimeUnit.SECONDS)
+                .headersDelay(delayMilliseconds, TimeUnit.MILLISECONDS)
                 .body("""[{"isbn":"1234567890","title":"Slow Catalog"}]""")
                 .build()
 
@@ -151,7 +151,7 @@ class CircuitBreakerIntegrationTest(
         fun `when catalog-service closes connection, then return empty list with 200 OK`() {
             // Given
             val expectedFallbackReason = "CATALOG_TIMEOUT"
-            slowCatalogResponse(delaySeconds = 6)
+            slowCatalogResponse(delayMilliseconds = 450)
 
             // When
             val response = webClient.get().uri("/books").exchange()
