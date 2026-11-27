@@ -3,9 +3,11 @@ package com.polarbookshop.edgeservice.circuitbreaker
 import com.polarbookshop.edgeservice.config.ServerMockConfiguration
 import com.polarbookshop.edgeservice.config.TestcontainersConfiguration
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
+import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.QueueDispatcher
+import mockwebserver3.RecordedRequest
 import mockwebserver3.SocketEffect
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Tag
@@ -14,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBodyList
 import java.util.concurrent.TimeUnit
@@ -48,7 +51,9 @@ class CircuitBreakerIntegrationTest(
     @BeforeTest
     fun setUp() {
         circuitBreakerRegistry.circuitBreaker("catalogCircuitBreaker").reset()
+        circuitBreakerRegistry.circuitBreaker("orderCircuitBreaker").reset()
         mockCatalogServer.dispatcher = QueueDispatcher()
+        mockOrderServer.dispatcher = QueueDispatcher()
     }
 
     private fun midCatalogRepsonseSocketDrop(burstCount: Int = 4) {
@@ -159,6 +164,34 @@ class CircuitBreakerIntegrationTest(
                 .valueEquals("X-Fallback-Reason", expectedFallbackReason)
                 .expectBodyList<Any>()
                 .hasSize(0)
+        }
+    }
+
+    @Nested
+    inner class GivenOrderPlacement {
+        private fun placeOrder(
+            isbn: String = "1987654321",
+            quantity: Int = 1,
+        ) = webClient
+            .post()
+            .uri("/orders")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("""{"isbn":$isbn,"quantity":$quantity}""")
+            .exchange()
+
+        @Test
+        fun `when order-service fails, then propagate 5xx without silent fallback`() {
+            // Given
+            mockOrderServer.dispatcher =
+                object : Dispatcher() {
+                    override fun dispatch(request: RecordedRequest) = MockResponse(code = HttpStatus.SERVICE_UNAVAILABLE.value())
+                }
+
+            // When
+            val response = placeOrder()
+
+            // Then
+            response.expectStatus().is5xxServerError
         }
     }
 }

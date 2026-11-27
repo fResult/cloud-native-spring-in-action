@@ -20,6 +20,6 @@ class ServerMockConfiguration {
         mockOrderServer: MockWebServer,
     ) = DynamicPropertyRegistrar { registry ->
         registry.add("CATALOG_SERVICE_URI", mockCatalogServer::httpUri)
-        registry.add("ORDER_SERVICE_URL", mockOrderServer::httpUri)
+        registry.add("ORDER_SERVICE_URI", mockOrderServer::httpUri)
     }
 }
